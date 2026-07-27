@@ -5,8 +5,9 @@ durante un viaje de compras a Corea.
 
 ## Estado
 
-La Fase 1 establece la base local. La aplicación todavía usa datos simulados y no
-está conectada a Supabase, WhatsApp, autenticación ni pagos.
+La Fase 2 contiene el prototipo visual completo para clientes y administración. La
+aplicación usa datos e interacciones simuladas y todavía no está conectada a
+Supabase, WhatsApp, autenticación ni pagos.
 
 Consulta [docs/implementation-status.md](docs/implementation-status.md) para conocer
 el avance y la siguiente fase autorizable.
@@ -34,7 +35,7 @@ seguras y Cron. No habrá un backend Node.js persistente.
 ## Configuración
 
 1. Copiar `.env.example` como `.env.local`.
-2. Mantener vacías las variables de Supabase durante la Fase 1.
+2. Mantener vacías las variables de Supabase durante las Fases 1 y 2.
 3. Instalar dependencias con `npm install`.
 4. Iniciar el entorno con `npm run dev`.
 5. Abrir `http://localhost:3000`.
@@ -61,9 +62,12 @@ npm run test:watch
 npm run format
 npm run format:check
 npm run build
+npm run smoke:static
 ```
 
 `npm run build` produce el sitio estático en `out/`.
+`npm run smoke:static` sirve esa carpeta temporalmente, comprueba las rutas
+principales con un timeout y cierra el servidor automáticamente.
 
 ## Base de datos y administrador
 
@@ -90,11 +94,12 @@ catálogo ni los pedidos existentes.
 
 ## Limitaciones actuales
 
-- Solo existe la página inicial de fundación.
-- Los productos son mocks y los botones no realizan operaciones.
-- No hay rutas de producto, carrito, checkout o administración.
+- Los productos, pedidos, clientes y tasas son datos simulados.
+- Los botones de WhatsApp solo previsualizan el mensaje y no abren la aplicación.
+- El ingreso, el checkout, la carga de imágenes y las acciones administrativas no
+  persisten cambios.
 - No existe persistencia ni seguridad RLS todavía.
-- La identidad visual y los flujos completos se validarán en la Fase 2.
+- Supabase, migraciones y RLS pertenecen exclusivamente a la Fase 3.
 
 ## Documentación
 

@@ -51,6 +51,139 @@ body {
   font-family: "Segoe UI", Arial, Helvetica, sans-serif;
 }
 
+.nav-link {
+  border-radius: 0.75rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0.7rem 0.9rem;
+}
+
+.nav-link:hover {
+  background: var(--surface-soft);
+  color: var(--foreground);
+}
+
+.page-container {
+  margin-inline: auto;
+  max-width: 72rem;
+  padding: 1.5rem 1rem 3rem;
+  width: 100%;
+}
+
+.product-shape {
+  align-items: center;
+  background: color-mix(in srgb, white 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  box-shadow: 0 18px 45px rgb(63 42 49 / 12%);
+  color: color-mix(in srgb, var(--foreground) 68%, transparent);
+  display: flex;
+  justify-content: center;
+  letter-spacing: 0.08em;
+  position: relative;
+  text-transform: uppercase;
+}
+
+.product-shape span {
+  font-size: 0.55rem;
+  font-weight: 800;
+}
+
+.product-tube {
+  border-radius: 0.5rem 0.5rem 1.1rem 1.1rem;
+  height: 64%;
+  width: 27%;
+}
+
+.product-tube::after {
+  background: var(--foreground);
+  border-radius: 0 0 0.35rem 0.35rem;
+  bottom: -8%;
+  content: "";
+  height: 10%;
+  position: absolute;
+  width: 68%;
+}
+
+.product-bottle {
+  border-radius: 1rem 1rem 1.4rem 1.4rem;
+  height: 55%;
+  width: 31%;
+}
+
+.product-bottle::before {
+  background: white;
+  border: 1px solid rgb(36 29 32 / 12%);
+  border-radius: 0.25rem 0.25rem 0 0;
+  content: "";
+  height: 20%;
+  position: absolute;
+  top: -18%;
+  width: 42%;
+}
+
+.product-album {
+  border-radius: 0.45rem;
+  height: 60%;
+  transform: rotate(-5deg);
+  width: 47%;
+}
+
+.product-mask {
+  border-radius: 0.6rem;
+  height: 62%;
+  width: 43%;
+}
+
+.product-lip {
+  border-radius: 0.45rem;
+  height: 59%;
+  width: 17%;
+}
+
+.product-lip::before {
+  background: #a84b61;
+  border-radius: 0.35rem 0.35rem 0 0;
+  content: "";
+  height: 45%;
+  position: absolute;
+  top: -30%;
+  transform: skew(-8deg);
+  width: 70%;
+}
+
+.product-plush {
+  border-radius: 48% 48% 44% 44%;
+  height: 48%;
+  width: 38%;
+}
+
+.product-plush::before,
+.product-plush::after {
+  background: inherit;
+  border: inherit;
+  border-radius: 50%;
+  content: "";
+  height: 40%;
+  position: absolute;
+  top: -18%;
+  width: 38%;
+}
+
+.product-plush::before {
+  left: 2%;
+}
+
+.product-plush::after {
+  right: 2%;
+}
+
+@media (min-width: 640px) {
+  .page-container {
+    padding: 2.5rem 1.5rem 4rem;
+  }
+}
+
 button,
 input,
 select,
