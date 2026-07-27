@@ -1,36 +1,105 @@
 # Security
 
-## Phase 1
+## Trust model
 
-The current application is static and contains no secrets, accounts, private data,
-database connection, or functional mutations.
+The browser is untrusted for identity, role, time, price, total, inventory,
+payment status, and state transitions. PostgreSQL constraints, RLS, database time,
+and `SECURITY DEFINER` functions are authoritative.
 
-## Planned authorization
+Every security-definer function fixes `search_path` to the empty string and uses
+schema-qualified identifiers. Function execution is revoked by default and granted
+only to the roles that need each RPC.
 
-- Guests receive a restricted anonymous Supabase identity.
-- Permanent customers can read only their own profile and orders.
-- Administrators are assigned outside browser-controlled input.
-- Public catalogue reads use an explicit safe projection.
-- Direct customer writes to orders, items, prices, inventory, and statuses are denied.
+## RLS matrix
 
-## Mandatory controls
+| Resource                 | Anonymous/public               | Customer identity               | Administrator                        |
+| ------------------------ | ------------------------------ | ------------------------------- | ------------------------------------ |
+| `public_catalogue`       | Safe projection read           | Safe projection read            | Safe projection read                 |
+| `campaign_settings`      | Read                           | Read                            | Read/write                           |
+| `profiles`               | None                           | Own read/update, role protected | All rows                             |
+| Categories/products      | No raw access                  | No raw access                   | Read/write                           |
+| Rates and observations   | None                           | None                            | Read/write                           |
+| Price versions           | No raw access                  | No raw access                   | Read; writes through secure RPC      |
+| Orders                   | None without anonymous sign-in | Own read                        | Read; transitions through secure RPC |
+| Order items              | None                           | Own read, immutable             | Read, immutable                      |
+| Reservations             | None                           | None                            | Read; writes through secure RPC      |
+| Status history           | None                           | Own read                        | Read                                 |
+| Admin overrides          | None                           | None                            | Read; writes through secure RPC      |
+| Evidence metadata        | None                           | None                            | Read/write with uploader check       |
+| Product-image objects    | Public read                    | Public read                     | Write                                |
+| Payment-evidence objects | None                           | None                            | Read/write                           |
 
-- RLS on every exposed table.
-- Storage policies for product images and payment evidence.
-- Secure functions with fixed search paths and internal authorization.
-- Database-time expiration.
-- Transactional row locking for inventory.
-- Idempotency for checkout.
-- Immutable order snapshots.
-- Generic customer errors with no SQL or internal IDs.
+An anonymous checkout still requires Supabase anonymous sign-in and therefore uses
+the `authenticated` database role with an anonymous JWT. The plain `anon` role
+cannot execute checkout.
+
+## Direct mutation restrictions
+
+Customers do not receive `INSERT`, `UPDATE`, or `DELETE` privileges on orders,
+items, reservations, price versions, history, or overrides. RLS is an additional
+barrier, not the only barrier.
+
+Administrative catalogue maintenance uses RLS backed by `is_admin()`. Sensitive
+mutations still require functions:
+
+- Price publication calculates and snapshots values in PostgreSQL.
+- Checkout calculates totals and reserves stock under row locks.
+- Payment reporting is owner-bound and time-bound.
+- Paid confirmation converts reservations and confirmed inventory atomically.
+- Late-payment acceptance records an immutable reason.
+- Cron expiration cannot be called by browser roles.
+
+A product trigger prevents direct changes to `confirmed_stock` outside trusted
+database execution.
+
+## Threat model and mitigations
+
+| Threat                              | Mitigation                                                            |
+| ----------------------------------- | --------------------------------------------------------------------- |
+| Browser changes price or total      | Secure checkout ignores browser totals and uses active price versions |
+| Two customers order the final unit  | Deterministic product row locks and active-reservation subtraction    |
+| Double click or network retry       | Unique `(actor_id, idempotency_key)` and existing-order return        |
+| Customer marks own order paid       | No direct update grant; report RPC can set only `payment_reported`    |
+| Expired browser clock               | `clock_timestamp()` controls prices and reservations                  |
+| Claiming guest orders by phone      | Ownership uses JWT actor/customer ID, never phone matching            |
+| Reading exact stock                 | Public view returns a state label, not inventory counts               |
+| Reading payment evidence            | Private bucket and admin-only Storage/table policies                  |
+| Replacing historical price          | Immutable price-version and order-item triggers                       |
+| Admin accepts late payment silently | Required reason and `order_admin_overrides` audit row                 |
+| Forged admin role                   | Role stored in protected profile row; browser input cannot change it  |
+| Function search-path injection      | Empty fixed search path and schema-qualified objects                  |
+| SQL errors leak internals           | RPCs raise stable generic business codes for UI mapping               |
+
+## Storage controls
+
+Product images and payment evidence use separate buckets and policy sets. Public
+access to product images does not imply access to evidence. MIME types and object
+sizes are constrained at bucket and relational metadata levels.
+
+## Verification
+
+Implemented:
+
+- RLS enabled on all 14 exposed public tables.
+- Raw catalogue inventory denied to public roles.
+- Safe catalogue projection granted to public roles.
+- Four administrator-only policies for the private evidence bucket.
+- Structural validation for fixed search paths, grants, policies, locks,
+  idempotency, Cron, and immutability.
+- pgTAP tests for schema, privilege matrix, business rules, and final-unit flow.
+
+Executed against the local Supabase PostgreSQL stack:
+
+- Clean database reset with all migrations and seed.
+- Four pgTAP files with 62 successful assertions.
+- Supabase database lint at warning level with no schema errors.
+
+A sustained two-connection concurrency stress test remains part of Phase 10. The
+Phase 3 reservation suite already verifies final-unit exclusion through the secure
+checkout function.
 
 ## Secrets
 
-Only Supabase publishable configuration and the Turnstile site key may be present in
-browser variables. Service-role, SMTP, OAuth, and Turnstile secrets belong in their
-provider dashboards or protected runtime configuration.
-
-## Phase 3 documentation gate
-
-This file must include the final RLS matrix, policy descriptions, grants, threat
-model, and executed verification results before database work is considered complete.
+Only the Supabase URL, publishable key, site URL, and Turnstile site key may be
+public browser variables. Service-role, OAuth, SMTP, and Turnstile secrets remain
+in provider-managed secret storage and are never committed.

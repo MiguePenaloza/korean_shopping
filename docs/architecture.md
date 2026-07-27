@@ -28,6 +28,19 @@ optimization.
 Runtime entities will use static routes plus query parameters, for example
 `/producto?id=...`, so products created after deployment do not require a rebuild.
 
+Phase 3 adds a disconnected Supabase backend definition:
+
+- Three ordered SQL migrations.
+- Four pgTAP suites and development seed data.
+- Public catalogue projection with no exact stock or cost fields.
+- Secure RPC boundaries for prices, checkout, payment reporting, and payment
+  confirmation.
+- Public product-image and private payment-evidence buckets.
+- Minute-level database expiration Cron.
+
+The Next.js prototype still uses mock data. Supabase client wiring belongs to later
+phases.
+
 ## Future data flow
 
 1. The browser reads a safe public product projection.
@@ -49,5 +62,7 @@ functions are authoritative.
 - `components/` contains UI and feature components.
 - `lib/` contains pure business helpers and future service clients.
 - `types/` contains shared domain types.
-- `supabase/` contains migrations and seed data from Phase 3.
-- `tests/` contains unit tests; database and end-to-end suites arrive later.
+- `supabase/` contains migrations, configuration, seed data, and pgTAP tests.
+- `tests/` contains frontend unit tests.
+- `scripts/validate-supabase.mjs` provides a finite structural database check when
+  a local Supabase runtime is unavailable.

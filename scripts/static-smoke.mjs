@@ -34,10 +34,17 @@ const server = createServer((request, response) => {
   const pathname = decodeURIComponent(
     new URL(request.url ?? "/", "http://127.0.0.1").pathname,
   );
-  const relativePath = pathname.endsWith("/") ? `${pathname}index.html` : pathname;
-  const filePath = normalize(join(outputDirectory, relativePath));
+  const candidatePaths =
+    pathname === "/"
+      ? ["/index.html"]
+      : pathname.endsWith("/")
+        ? [`${pathname}index.html`, `${pathname.slice(0, -1)}.html`]
+        : [pathname, `${pathname}.html`];
+  const filePath = candidatePaths
+    .map((candidate) => normalize(join(outputDirectory, candidate)))
+    .find((candidate) => candidate.startsWith(outputDirectory) && existsSync(candidate));
 
-  if (!filePath.startsWith(outputDirectory) || !existsSync(filePath)) {
+  if (!filePath) {
     response.writeHead(404);
     response.end("Not found");
     return;

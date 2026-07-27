@@ -3,7 +3,7 @@
 ## Target
 
 Cloudflare Pages will host the static `out/` directory. Deployment work belongs to
-Phase 11; Phase 1 only verifies that the static artifact can be produced.
+Phase 11; current phases only verify local source artifacts.
 
 ## Planned build settings
 
@@ -17,6 +17,7 @@ Production branch: main
 ## Required services
 
 - Supabase development and production projects.
+- Docker and Supabase CLI for local migration and pgTAP verification.
 - Cloudflare Pages and Turnstile.
 - Google OAuth application.
 - SMTP provider connected to Supabase Auth.
@@ -44,3 +45,6 @@ Cloudflare, or the SMTP provider and are never committed.
 Redeploy the previous Cloudflare Pages artifact for frontend regressions. Database
 migrations require a documented rollback or forward-fix strategy and must never
 delete order snapshots or payment history without an explicit data procedure.
+
+Before production, run the migration chain and `supabase test db` against a clean
+local stack, then apply the exact same migration files to the production project.

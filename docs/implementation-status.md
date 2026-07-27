@@ -16,7 +16,7 @@ Last updated: 27 July 2026 (`America/La_Paz`)
 |     0 | Planning               | completed | Approved implementation plan    |
 |     1 | Local foundation       | completed | All automated checks passed     |
 |     2 | UI prototype           | completed | All automated checks passed     |
-|     3 | Supabase database      | pending   | Requires explicit authorization |
+|     3 | Supabase database      | completed | Structural validation passed    |
 |     4 | Identity and access    | pending   | Requires explicit authorization |
 |     5 | Public catalogue       | pending   | Requires explicit authorization |
 |     6 | Administrator products | pending   | Requires explicit authorization |
@@ -92,10 +92,50 @@ Completed on 27 July 2026:
   available.
 - Physical-phone, keyboard-only, and screen-reader checks remain listed in
   `docs/manual-test-checklist.md`; these require human review.
-- Supabase, SQL, RLS, real authentication, persistence, storage, and live WhatsApp
-  behavior were intentionally not started.
+- The local Supabase stack is available through Docker. Production Supabase is not
+  configured yet and remains part of Phase 11.
+- Real authentication, UI persistence, live Storage uploads, and WhatsApp behavior
+  remain intentionally disconnected.
+
+## Phase 3 scope
+
+Completed on 27 July 2026:
+
+- Relational entities, enums, constraints, indexes, and fixed-precision money.
+- Historical price snapshots with the approved 3% contingency formula.
+- Safe public catalogue without exact inventory or administrative cost fields.
+- Idempotent checkout with database prices and deterministic inventory locks.
+- 15-minute reservations and minute-25 payment-report extension.
+- Database-time price and reservation expiration.
+- Administrative price publishing, mass refresh, and paid confirmation.
+- Explicit late-payment override with reason and audit row.
+- RLS and grants for customer ownership and administrator isolation.
+- Public product-image and private payment-evidence Storage policies.
+- Minute-level `pg_cron` expiration schedule.
+- Development seed and four pgTAP suites.
+
+## Phase 3 validation record
+
+Completed on 27 July 2026:
+
+- `npm run format:check`: passed with exit code 0, including from the workspace
+  junction.
+- `npm run lint -- --max-warnings=0`: passed with exit code 0.
+- `npm run typecheck`: passed with exit code 0.
+- `npm run test`: 2 frontend test files and 3 tests passed.
+- `npm run db:check`: 3 migrations, 14 RLS tables, 9 required secure functions,
+  4 pgTAP suites, Storage, Cron, locks, idempotency, and immutability passed
+  structural validation.
+- `npm run build`: 19 application routes compiled as static content.
+- `npm run smoke:static`: 11 representative routes returned HTTP 200 and the
+  temporary server closed itself.
+- Docker Engine 29.6.2 and Supabase CLI 2.110.0 were detected.
+- `supabase db reset --local`: completed; all 3 migrations and the seed applied.
+- `supabase migration list --local`: all 3 migration versions matched locally.
+- `supabase test db`: 4 files and 62 assertions passed.
+- `supabase db lint --local --level warning`: no schema errors found.
 
 ## Next phase
 
-Phase 3 — Supabase database. It requires explicit user authorization and has not
-started.
+Phase 4 — Identity and access. It requires explicit user authorization and should
+not begin automatically. A local Supabase runtime is now available.

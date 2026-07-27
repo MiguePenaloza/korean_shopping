@@ -36,6 +36,29 @@ Manual review before Phase 3:
 - [ ] Confirm file inputs announce their labels with a screen reader.
 - [ ] Review the draft purchase conditions and privacy copy.
 
+## Phase 3
+
+Repository validation:
+
+- [x] Three ordered migrations define schema, secure functions, RLS, Storage, and Cron.
+- [x] Every exposed public table has RLS enabled.
+- [x] Public catalogue omits exact inventory, costs, margins, and administrative data.
+- [x] Browser roles cannot directly mutate orders, items, reservations, or price history.
+- [x] Checkout uses database prices, idempotency, deterministic row locks, and snapshots.
+- [x] Payment evidence uses a private administrator-only bucket.
+- [x] Four pgTAP suites cover schema, security, business rules, and the final unit.
+- [x] `npm run db:check` completes with strict structural assertions.
+
+Local Supabase runtime:
+
+- [x] Install Docker and Supabase CLI.
+- [x] Run `supabase start`.
+- [x] Run `supabase db reset` from a clean database.
+- [x] Run `supabase test db`: 4 files and 62 assertions passed.
+- [x] Run `supabase db lint --local --level warning`: no schema errors.
+- [ ] Run a real two-connection race against the final unit.
+- [ ] Inspect Supabase database and security-advisor warnings.
+
 ## Future launch paths
 
 - [ ] Create and share a product from a phone.

@@ -5,9 +5,9 @@ durante un viaje de compras a Corea.
 
 ## Estado
 
-La Fase 2 contiene el prototipo visual completo para clientes y administración. La
-aplicación usa datos e interacciones simuladas y todavía no está conectada a
-Supabase, WhatsApp, autenticación ni pagos.
+La Fase 3 añade el esquema, seguridad y funciones transaccionales de Supabase. La
+interfaz todavía usa datos simulados y se conectará por funciones en fases
+posteriores.
 
 Consulta [docs/implementation-status.md](docs/implementation-status.md) para conocer
 el avance y la siguiente fase autorizable.
@@ -63,16 +63,20 @@ npm run format
 npm run format:check
 npm run build
 npm run smoke:static
+npm run db:check
 ```
 
 `npm run build` produce el sitio estático en `out/`.
 `npm run smoke:static` sirve esa carpeta temporalmente, comprueba las rutas
 principales con un timeout y cierra el servidor automáticamente.
+`npm run db:check` valida de forma finita la estructura de migraciones, RLS,
+funciones, Storage, Cron y pruebas SQL.
 
 ## Base de datos y administrador
 
-Las migraciones y políticas se crearán en la Fase 3. La autenticación y el
-procedimiento documentado para crear el primer administrador llegarán en la Fase 4.
+Las migraciones, políticas RLS, buckets y pruebas pgTAP están en `supabase/`. Para
+aplicarlas localmente se requieren Docker y Supabase CLI. La autenticación y el
+procedimiento seguro para crear el primer administrador llegarán en la Fase 4.
 No deben hacerse cambios manuales de esquema que no estén representados por una
 migración.
 
@@ -88,7 +92,7 @@ Output directory: out
 
 ## Cierre de la campaña
 
-La Fase 3 añadirá una configuración `ordering_open`. Al terminar la campaña, el
+La configuración `ordering_open` ya existe en la base. Al terminar la campaña, el
 administrador la establecerá en falso para impedir pedidos nuevos sin borrar el
 catálogo ni los pedidos existentes.
 
@@ -98,8 +102,11 @@ catálogo ni los pedidos existentes.
 - Los botones de WhatsApp solo previsualizan el mensaje y no abren la aplicación.
 - El ingreso, el checkout, la carga de imágenes y las acciones administrativas no
   persisten cambios.
-- No existe persistencia ni seguridad RLS todavía.
-- Supabase, migraciones y RLS pertenecen exclusivamente a la Fase 3.
+- La interfaz no está conectada todavía a Supabase.
+- El entorno Supabase local ya fue recreado desde cero y sus 62 pruebas pgTAP
+  están aprobadas.
+- La creación de identidades, perfiles y primer administrador pertenece a la
+  Fase 4.
 
 ## Documentación
 

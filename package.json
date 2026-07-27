@@ -6,12 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "smoke:static": "node scripts/static-smoke.mjs",
+    "db:check": "node scripts/validate-supabase.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format": "prettier --write \"**/*\" --ignore-unknown",
+    "format:check": "prettier --check \"**/*\" --ignore-unknown"
   },
   "dependencies": {
     "next": "16.2.11",
@@ -26,6 +27,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.11",
     "prettier": "^3.9.6",
+    "supabase": "^2.109.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"
