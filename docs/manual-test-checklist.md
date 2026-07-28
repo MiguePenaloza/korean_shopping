@@ -113,3 +113,25 @@ Manual review before Phase 5:
 - [ ] Confirm an anonymous visitor cannot open `Mis pedidos`.
 - [ ] Confirm a customer cannot open `/admin`.
 - [ ] Confirm the promoted administrator can open `/admin`.
+
+## Phase 6
+
+Automated:
+
+- [x] Administrator functions reject non-administrator identities.
+- [x] Product creation generates a unique public code and authoritative price.
+- [x] Product media metadata is limited to three images.
+- [x] Direct browser writes to products, rates, and image metadata remain denied.
+- [x] Exact stock is returned only by the administrator listing RPC.
+- [x] Bulk repricing creates immutable price versions with the next 08:15 deadline.
+
+Manual review before Phase 7:
+
+- [ ] Create a draft with no photograph and publish it later.
+- [ ] Create a published product with three phone photographs.
+- [ ] Confirm large photographs are resized and retain their orientation.
+- [ ] Confirm the last selected category is remembered on the same device.
+- [ ] Share a product through Android and through clipboard fallback.
+- [ ] Review exact total, confirmed, reserved, and remaining units as administrator.
+- [ ] Save a reviewed rate, compare every previewed price, and confirm the update.
+- [ ] Check product creation and bulk repricing at 320 px with keyboard navigation.

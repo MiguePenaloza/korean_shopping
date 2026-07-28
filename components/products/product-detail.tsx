@@ -31,6 +31,7 @@ export function ProductDetail() {
     product: null,
   });
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState(0);
 
   useEffect(() => {
     if (!configured) return;
@@ -92,6 +93,8 @@ export function ProductDetail() {
   }
 
   const product = state.product;
+  const productImages = product.images ?? [];
+  const activeImage = productImages[selectedImage] ?? productImages[0];
   const available = product.availability === "available";
   const status =
     product.availability === "available"
@@ -110,7 +113,48 @@ export function ProductDetail() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_0.85fr]">
-      <ProductVisual product={product} className="rounded-3xl lg:aspect-square" />
+      <div>
+        {activeImage ? (
+          <div className="aspect-square overflow-hidden rounded-3xl bg-surface-soft">
+            {/* Full product images are pre-compressed to a maximum of 1200 px. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={activeImage.url}
+              alt={activeImage.alt}
+              className="h-full w-full object-contain"
+              decoding="async"
+            />
+          </div>
+        ) : (
+          <ProductVisual product={product} className="rounded-3xl lg:aspect-square" />
+        )}
+        {productImages.length > 1 ? (
+          <div className="mt-3 flex gap-3" aria-label="Fotografías del producto">
+            {productImages.map((image, index) => (
+              <button
+                key={image.url}
+                type="button"
+                className={`h-20 w-20 overflow-hidden rounded-xl border-2 ${
+                  selectedImage === index ? "border-accent" : "border-transparent"
+                }`}
+                aria-label={`Ver fotografía ${index + 1}`}
+                aria-pressed={selectedImage === index}
+                onClick={() => setSelectedImage(index)}
+              >
+                {/* Product thumbnails are pre-compressed to 480 px during upload. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={image.thumbnailUrl}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
       <div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={badgeVariant}>{status}</Badge>

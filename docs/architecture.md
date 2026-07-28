@@ -29,8 +29,8 @@ Runtime entities will use static routes plus query parameters, for example
 
 The Supabase backend contains:
 
-- Four ordered SQL migrations.
-- Five pgTAP suites and development seed data.
+- Six ordered SQL migrations.
+- Seven pgTAP suites and development seed data.
 - Public catalogue projection with no exact stock or cost fields.
 - Secure RPC boundaries for prices, checkout, payment reporting, and payment
   confirmation.
@@ -60,8 +60,19 @@ Phase 5 connects the customer catalogue to Supabase:
 - Product-image URLs come only from the public `product-images` bucket; the
   interface keeps its accessible placeholder when no image exists.
 
-Administrator product screens and the cart continue using mock data until Phases
-6 and 7.
+Phase 6 connects administrator product management:
+
+- The browser compresses selected photographs to a full image of at most 1200 px
+  and a thumbnail of at most 480 px before uploading.
+- Storage policies allow administrator writes only, while safe public views expose
+  published product media.
+- Secure RPC functions create products, publish drafts, expose exact inventory to
+  administrators, register reviewed rates, preview bulk prices, and confirm the
+  new immutable price versions.
+- Client-side conversion is informational; PostgreSQL calculates every persisted
+  amount and the next 08:15 `America/La_Paz` expiration from database time.
+
+The cart continues using mock data until Phase 7.
 
 ## Future data flow
 
@@ -90,6 +101,8 @@ functions are authoritative.
   a local Supabase runtime is unavailable.
 - `scripts/auth-smoke.mjs` verifies the local Auth-to-profile boundary using only a
   publishable key.
+- `scripts/admin-products-smoke.mjs` verifies the administrator creation, media,
+  catalogue, and bulk-pricing boundaries in the local stack.
 
 ## Static authentication flow
 

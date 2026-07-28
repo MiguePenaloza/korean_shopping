@@ -1,5 +1,11 @@
 export type ProductAvailability = "available" | "reserved" | "sold_out" | "expired";
 
+export type ProductImage = {
+  url: string;
+  thumbnailUrl: string;
+  alt: string;
+};
+
 export type Product = {
   id: string;
   code: string;
@@ -15,4 +21,5 @@ export type Product = {
   visual: "tube" | "bottle" | "album" | "mask" | "lip" | "plush";
   thumbnailUrl?: string;
   thumbnailAlt?: string;
+  images?: ProductImage[];
 };

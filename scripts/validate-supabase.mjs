@@ -23,8 +23,8 @@ function occurrences(source, pattern) {
 
 requireCondition(migrations.length >= 3, "Expected at least three ordered migrations.");
 requireCondition(
-  tests.length >= 6,
-  "Expected schema, security, business, reservation, identity, and catalogue tests.",
+  tests.length >= 7,
+  "Expected schema, security, business, reservation, identity, catalogue, and administrator-product tests.",
 );
 
 const migrationSql = migrations
@@ -75,6 +75,13 @@ const requiredFunctions = [
   "upsert_own_profile",
   "promote_admin_by_email",
   "search_public_catalogue",
+  "admin_get_pricing_context",
+  "admin_create_product",
+  "admin_publish_existing_product",
+  "admin_list_products",
+  "admin_create_exchange_rate",
+  "admin_preview_available_prices",
+  "admin_refresh_available_prices_now",
 ];
 
 for (const functionName of requiredFunctions) {
@@ -155,6 +162,24 @@ requireCondition(
     migrationSql,
   ),
   "Public catalogue availability sorting is missing.",
+);
+requireCondition(
+  /create or replace view public\.public_product_images/i.test(migrationSql),
+  "Safe public product-image projection is missing.",
+);
+requireCondition(
+  /jsonb_array_length\([a-z_]+\) > 3/i.test(migrationSql),
+  "Administrator product creation does not enforce the three-image limit.",
+);
+requireCondition(
+  /revoke insert, update, delete on[\s\S]{0,300}public\.products,[\s\S]{0,100}from authenticated/i.test(
+    migrationSql,
+  ),
+  "Direct browser product mutation was not revoked.",
+);
+requireCondition(
+  /p_now at time zone 'America\/La_Paz'[\s\S]{0,300}time '08:15'/i.test(migrationSql),
+  "Administrator pricing does not calculate the next 08:15 Bolivia expiration.",
 );
 
 for (const name of [...migrations, ...tests]) {

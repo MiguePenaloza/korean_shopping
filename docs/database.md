@@ -2,7 +2,7 @@
 
 ## Current result
 
-The Supabase schema is defined by five ordered migrations:
+The Supabase schema is defined by six ordered migrations:
 
 1. `20260727010000_initial_schema.sql` — types, tables, constraints, indexes, and
    RLS activation.
@@ -16,6 +16,9 @@ The Supabase schema is defined by five ordered migrations:
    bootstrap.
 5. `20260727014000_public_catalogue.sql` — safe categories, live catalogue
    projection, server-side search, state ordering, and pagination capped at 20.
+6. `20260728010000_administrator_products.sql` — thumbnail metadata, safe product
+   media view, administrator product/rate RPCs, exact-inventory listing, and
+   database-derived price expiration.
 
 `supabase/seed.sql` contains development-only categories, rates, products, and
 price versions. It contains no real customer or payment data.
@@ -40,6 +43,12 @@ price versions. It contains no real customer or payment data.
   costs, or administrative fields.
 - `public_categories`: active category names and slugs without administrative
   mutation access.
+- `public_product_images`: published image paths and alt text without exposing raw
+  product or administrative fields.
+
+Administrator browsers cannot write these tables directly. Product creation,
+draft publication, exchange-rate registration, price previews, and bulk refreshes
+cross dedicated `SECURITY DEFINER` RPCs that validate the JWT administrator role.
 
 `search_public_catalogue` searches name, brand, or code, filters by safe category
 slug, counts the complete filtered result, and returns one page. PostgreSQL orders
@@ -149,6 +158,8 @@ path, and creation time. No automatic evidence deletion is configured.
   administrator bootstrap.
 - Public catalogue projection, filtering, availability ordering, inventory
   privacy, and pagination.
+- Administrator product creation and publication, image limits, exact inventory,
+  reviewed-rate creation, fixed 3% contingency, and bulk repricing.
 
 Local execution requires Docker and the Supabase CLI:
 

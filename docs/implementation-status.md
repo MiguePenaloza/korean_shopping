@@ -1,6 +1,6 @@
 # Implementation status
 
-Last updated: 27 July 2026 (`America/La_Paz`)
+Last updated: 28 July 2026 (`America/La_Paz`)
 
 ## Status values
 
@@ -19,7 +19,7 @@ Last updated: 27 July 2026 (`America/La_Paz`)
 |     3 | Supabase database      | completed | Structural validation passed    |
 |     4 | Identity and access    | completed | All automated checks passed     |
 |     5 | Public catalogue       | completed | All automated checks passed     |
-|     6 | Administrator products | pending   | Requires explicit authorization |
+|     6 | Administrator products | completed | All automated checks passed     |
 |     7 | Cart and orders        | pending   | Requires explicit authorization |
 |     8 | Order administration   | pending   | Requires explicit authorization |
 |     9 | Customer tracking      | pending   | Requires explicit authorization |
@@ -88,14 +88,14 @@ Completed on 27 July 2026:
 
 - Git was installed and a local repository was initialized on branch `main`. No remote
   or author identity was configured, and no commit was created.
-- Product photography remains placeholder artwork until real product images are
-  available.
+- Seed product photography remains placeholder artwork; newly created products can
+  use up to three real photographs.
 - Physical-phone, keyboard-only, and screen-reader checks remain listed in
   `docs/manual-test-checklist.md`; these require human review.
 - The local Supabase stack is available through Docker. Production Supabase is not
   configured yet and remains part of Phase 11.
-- Product administration, real order creation, live Storage uploads, and WhatsApp
-  behavior remain intentionally disconnected until their approved phases.
+- Real order creation and WhatsApp behavior remain intentionally disconnected
+  until Phase 7.
 - Google OAuth, production SMTP, production Turnstile, and the real administrator
   account require provider configuration in Phase 11. Local email links are
   inspectable through Mailpit.
@@ -227,7 +227,58 @@ Completed on 27 July 2026:
   temporary server closed itself.
 - The local Supabase stack was stopped after validation with data preserved.
 
+## Phase 6 scope
+
+Completed on 28 July 2026:
+
+- Quick administrator product creation with remembered category, KRW cost, exact
+  inventory, fixed BOB margin, draft, and immediate publication.
+- Informational browser preview and authoritative PostgreSQL price calculation with
+  the fixed 3% contingency.
+- Browser-side JPEG/PNG/WebP validation, orientation-aware resizing, maximum 1200 px
+  full images, maximum 480 px thumbnails, and a three-image limit.
+- Administrator-only Storage uploads and safe public product-image projections.
+- Exact total, confirmed, reserved, and remaining stock in the administrator list.
+- Draft publication and native sharing with clipboard fallback.
+- Reviewed exchange-rate creation with source and Bolivia observation date.
+- Bulk price preview and explicit confirmation using the current or Friday rate.
+- Database-derived next 08:15 `America/La_Paz` expiration; no automatic
+  reactivation.
+- Full image gallery on the live public product detail.
+
+Excluded until later:
+
+- Real cart persistence, inventory reservations, checkout, and WhatsApp actions
+  (Phase 7).
+- Payment administration and private evidence uploads (Phase 8).
+- Production provider configuration and deployment (Phase 11).
+
+## Phase 6 validation record
+
+Completed on 28 July 2026:
+
+- `npm run format:check`: passed with exit code 0.
+- `npm run lint -- --max-warnings=0`: passed with exit code 0.
+- `npm run typecheck`: passed with exit code 0.
+- `npm run test`: 5 frontend test files and 11 tests passed.
+- `npm run db:check`: 6 migrations, 14 RLS tables, 20 secure functions, and
+  7 pgTAP suites passed structural validation.
+- `supabase db reset --local`: all 6 migrations and the seed applied cleanly.
+- `supabase test db`: 7 files and 113 assertions passed.
+- `supabase db lint --local --schema public --level warning --fail-on warning`: no
+  schema warnings or errors found.
+- `npm run smoke:admin-products`: administrator creation, image upload, safe public
+  media, exact private inventory, reviewed rate, preview, and bulk refresh passed
+  through the Supabase SDK.
+- `npm run build`: 25 static pages generated across 24 application routes.
+- `npm run smoke:static`: 17 representative URLs returned HTTP 200 and the
+  temporary server closed itself.
+- The local database was reset after the smoke test so disposable users, products,
+  images, and rates were removed.
+- The local Supabase stack was stopped after validation with the clean seed data
+  preserved.
+
 ## Next phase
 
-Phase 6 — Administrator products. It requires explicit user authorization and must not
-begin automatically.
+Phase 7 — Cart and orders. It requires explicit user authorization and must not begin
+automatically.

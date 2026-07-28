@@ -1,7 +1,7 @@
 "use client";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-import type { Product, ProductAvailability } from "@/types/product";
+import type { Product, ProductAvailability, ProductImage } from "@/types/product";
 
 export type PublicCategory = {
   id: string;
@@ -196,14 +196,42 @@ export async function getCatalogueProduct(id: string): Promise<Product | null> {
     return null;
   }
 
-  const { data, error } = await requireClient()
-    .from("public_catalogue")
-    .select(
-      "id, code, name, brand, description, variant, category_name, price_bob, price_expires_at, availability, thumbnail_path, thumbnail_alt",
-    )
-    .eq("id", id)
-    .maybeSingle();
+  const supabase = requireClient();
+  const [productResult, imagesResult] = await Promise.all([
+    supabase
+      .from("public_catalogue")
+      .select(
+        "id, code, name, brand, description, variant, category_name, price_bob, price_expires_at, availability, thumbnail_path, thumbnail_alt",
+      )
+      .eq("id", id)
+      .maybeSingle(),
+    supabase
+      .from("public_product_images")
+      .select("storage_path, thumbnail_storage_path, alt_text, sort_order")
+      .eq("product_id", id)
+      .order("sort_order", { ascending: true }),
+  ]);
 
-  if (error) throw new Error("CATALOGUE_PRODUCT_UNAVAILABLE");
-  return data ? mapCatalogueRow(data) : null;
+  if (productResult.error || imagesResult.error) {
+    throw new Error("CATALOGUE_PRODUCT_UNAVAILABLE");
+  }
+  if (!productResult.data) return null;
+
+  const images: ProductImage[] = (
+    Array.isArray(imagesResult.data) ? imagesResult.data : []
+  ).map((value) => {
+    const row = value as Record<string, unknown>;
+    const path = requiredString(row.storage_path, "IMAGE_PATH");
+    const thumbnailPath = requiredString(row.thumbnail_storage_path, "THUMBNAIL_PATH");
+    const url = publicImageUrl(path);
+    const thumbnailUrl = publicImageUrl(thumbnailPath);
+    if (!url || !thumbnailUrl) throw new Error("CATALOGUE_IMAGE_UNAVAILABLE");
+    return {
+      url,
+      thumbnailUrl,
+      alt: requiredString(row.alt_text, "IMAGE_ALT"),
+    };
+  });
+
+  return { ...mapCatalogueRow(productResult.data), images };
 }
