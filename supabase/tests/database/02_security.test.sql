@@ -1,6 +1,6 @@
 begin;
 
-select plan(22);
+select plan(23);
 
 select is(
   (select relrowsecurity from pg_class where oid = 'public.profiles'::regclass),
@@ -108,8 +108,17 @@ select is(
     'public.create_order(uuid,text,text,jsonb)',
     'EXECUTE'
   ),
+  false,
+  'authenticated identities cannot bypass checkout acceptance'
+);
+select is(
+  has_function_privilege(
+    'authenticated',
+    'public.submit_order(uuid,text,text,jsonb,boolean,boolean)',
+    'EXECUTE'
+  ),
   true,
-  'authenticated identities can call checkout'
+  'authenticated identities can call the accepted checkout RPC'
 );
 select is(
   has_function_privilege(

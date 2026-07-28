@@ -4,13 +4,13 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
+import { useCart } from "@/components/cart/cart-provider";
 import { ProductVisual } from "@/components/products/product-visual";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { MockNotice } from "@/components/ui/mock-notice";
 import { getCatalogueProduct } from "@/lib/catalogue/catalogue";
 import { formatBob } from "@/lib/money/format";
 import type { Product } from "@/types/product";
@@ -24,13 +24,14 @@ type ProductState = {
 export function ProductDetail() {
   const params = useSearchParams();
   const { configured } = useAuth();
+  const { addItem, items } = useCart();
   const id = params.get("id") ?? "";
   const [state, setState] = useState<ProductState>({
     id: "",
     status: "loading",
     product: null,
   });
-  const [addedProductId, setAddedProductId] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
 
   useEffect(() => {
@@ -93,6 +94,7 @@ export function ProductDetail() {
   }
 
   const product = state.product;
+  const cartQuantity = items.find((item) => item.productId === product.id)?.quantity ?? 0;
   const productImages = product.images ?? [];
   const activeImage = productImages[selectedImage] ?? productImages[0];
   const available = product.availability === "available";
@@ -195,14 +197,18 @@ export function ProductDetail() {
                 className="h-full w-12 text-xl"
                 type="button"
                 aria-label="Disminuir cantidad"
+                disabled={quantity <= 1}
+                onClick={() => setQuantity((current) => Math.max(1, current - 1))}
               >
                 −
               </button>
-              <span className="w-12 text-center font-bold">1</span>
+              <span className="w-12 text-center font-bold">{quantity}</span>
               <button
                 className="h-full w-12 text-xl"
                 type="button"
                 aria-label="Aumentar cantidad"
+                disabled={quantity >= 20}
+                onClick={() => setQuantity((current) => Math.min(20, current + 1))}
               >
                 +
               </button>
@@ -212,14 +218,14 @@ export function ProductDetail() {
             </span>
           </div>
           {available ? (
-            addedProductId === product.id ? (
+            cartQuantity > 0 ? (
               <ButtonLink href="/carrito" className="mt-4 w-full">
-                Ver carrito
+                Ver carrito · {cartQuantity}
               </ButtonLink>
             ) : (
               <Button
                 className="mt-4 w-full"
-                onClick={() => setAddedProductId(product.id)}
+                onClick={() => addItem(product.id, quantity)}
               >
                 Agregar al carrito
               </Button>
@@ -230,7 +236,6 @@ export function ProductDetail() {
             </Button>
           )}
         </Card>
-        <MockNotice className="mt-4" />
       </div>
     </div>
   );

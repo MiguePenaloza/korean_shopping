@@ -29,8 +29,8 @@ Runtime entities will use static routes plus query parameters, for example
 
 The Supabase backend contains:
 
-- Six ordered SQL migrations.
-- Seven pgTAP suites and development seed data.
+- Seven ordered SQL migrations.
+- Eight pgTAP suites and development seed data.
 - Public catalogue projection with no exact stock or cost fields.
 - Secure RPC boundaries for prices, checkout, payment reporting, and payment
   confirmation.
@@ -72,9 +72,21 @@ Phase 6 connects administrator product management:
 - Client-side conversion is informational; PostgreSQL calculates every persisted
   amount and the next 08:15 `America/La_Paz` expiration from database time.
 
-The cart continues using mock data until Phase 7.
+Phase 7 connects cart and ordering:
 
-## Future data flow
+- The cart stores only product identifiers and quantities in device-local storage.
+  It never reserves inventory or acts as a price source.
+- Cart and checkout screens reload the safe catalogue before continuing.
+- `submit_order` requires a signed Supabase identity, acceptance of both documents,
+  and one idempotency key per cart attempt.
+- PostgreSQL locks products, validates database time and active price versions,
+  derives totals, stores immutable snapshots, and creates 15-minute reservations.
+- The ownership-checked confirmation RPC exposes only the order summary, immutable
+  items, deadlines, and configured WhatsApp contact needed by the customer.
+- Payment reporting extends an active reservation to minute 25 and opens WhatsApp;
+  it cannot set `paid`.
+
+## Order data flow
 
 1. The browser reads a safe public product projection.
 2. Client calculations are previews only.
@@ -82,6 +94,7 @@ The cart continues using mock data until Phase 7.
 4. PostgreSQL validates database time, inventory, active price versions, and totals.
 5. RLS limits every direct read.
 6. Storage RLS separates public product media from private payment evidence.
+7. The browser opens `wa.me` only after the payment-report mutation succeeds.
 
 ## Trust boundaries
 
@@ -103,6 +116,8 @@ functions are authoritative.
   publishable key.
 - `scripts/admin-products-smoke.mjs` verifies the administrator creation, media,
   catalogue, and bulk-pricing boundaries in the local stack.
+- `scripts/orders-smoke.mjs` verifies signed guest checkout, idempotency,
+  confirmation ownership, deadlines, and payment reporting.
 
 ## Static authentication flow
 

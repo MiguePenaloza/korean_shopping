@@ -5,10 +5,9 @@ durante un viaje de compras a Corea.
 
 ## Estado
 
-La Fase 6 conecta la administración de productos a Supabase: creación rápida,
-fotografías optimizadas, conversión KRW a BOB, inventario exacto, publicación,
-compartir y renovación masiva de precios ya usan funciones seguras. El carrito y
-los pedidos se conectarán en la siguiente fase.
+La Fase 7 conecta el carrito, checkout, reservas y avisos de pago a Supabase. El
+carrito permanece en el dispositivo hasta confirmar; PostgreSQL calcula el total,
+bloquea inventario y crea la reserva. Los botones abren WhatsApp con el pedido real.
 
 Consulta [docs/implementation-status.md](docs/implementation-status.md) para conocer
 el avance y la siguiente fase autorizable.
@@ -67,6 +66,7 @@ npm run smoke:static
 npm run smoke:auth
 npm run smoke:catalogue
 npm run smoke:admin-products
+npm run smoke:orders
 npm run db:check
 ```
 
@@ -83,6 +83,8 @@ búsqueda, límites de página y privacidad del inventario.
 `npm run smoke:admin-products` requiere además `BP_SUPABASE_SECRET_KEY` únicamente
 en la terminal local; verifica la frontera administrativa sin exponer esa clave al
 navegador.
+`npm run smoke:orders` usa la URL y clave pública locales para comprobar checkout
+invitado, idempotencia, propiedad del pedido y el aviso de pago.
 
 ## Base de datos y administrador
 
@@ -110,14 +112,17 @@ catálogo ni los pedidos existentes.
 
 ## Limitaciones actuales
 
-- Los pedidos y su seguimiento siguen usando datos simulados.
-- Los botones de WhatsApp solo previsualizan el mensaje y no abren la aplicación.
+- El historial general y la administración de pedidos siguen usando datos
+  simulados hasta las Fases 8 y 9.
+- Los botones de la confirmación real ya abren WhatsApp con mensajes
+  predeterminados.
 - El ingreso, registro, recuperación, perfiles, sesión anónima y catálogo público
   ya usan Supabase.
-- El checkout prepara la identidad, pero todavía no crea una reserva o pedido real.
+- El checkout ya crea pedidos y reservas reales de 15 minutos; el aviso de pago
+  amplía la reserva hasta el minuto 25.
 - La carga de imágenes de producto y las acciones administrativas ya persisten
   mediante Storage y RPC seguras.
-- El entorno Supabase local fue recreado desde cero y sus 113 comprobaciones pgTAP
+- El entorno Supabase local fue recreado desde cero y sus 135 comprobaciones pgTAP
   están aprobadas.
 
 ## Documentación

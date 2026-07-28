@@ -2,7 +2,6 @@
 
 import { useSearchParams } from "next/navigation";
 
-import { OrderActions } from "@/components/orders/order-actions";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { findMockOrder, orderStatusCopy } from "@/lib/mock-data/orders";
@@ -49,9 +48,10 @@ export function CustomerOrderDetail() {
           </li>
         </ol>
       </Card>
-      <div className="mt-4">
-        <OrderActions />
-      </div>
+      <Card className="mt-4 p-5 text-sm leading-6 text-muted">
+        Las acciones de pago se muestran únicamente en la confirmación real del pedido. El
+        historial completo se conectará en la Fase 9.
+      </Card>
     </div>
   );
 }

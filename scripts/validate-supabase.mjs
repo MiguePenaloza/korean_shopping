@@ -23,8 +23,8 @@ function occurrences(source, pattern) {
 
 requireCondition(migrations.length >= 3, "Expected at least three ordered migrations.");
 requireCondition(
-  tests.length >= 7,
-  "Expected schema, security, business, reservation, identity, catalogue, and administrator-product tests.",
+  tests.length >= 8,
+  "Expected schema, security, business, reservation, identity, catalogue, administrator-product, and checkout tests.",
 );
 
 const migrationSql = migrations
@@ -82,6 +82,9 @@ const requiredFunctions = [
   "admin_create_exchange_rate",
   "admin_preview_available_prices",
   "admin_refresh_available_prices_now",
+  "submit_order",
+  "get_own_order_confirmation",
+  "report_own_order_payment",
 ];
 
 for (const functionName of requiredFunctions) {
@@ -180,6 +183,24 @@ requireCondition(
 requireCondition(
   /p_now at time zone 'America\/La_Paz'[\s\S]{0,300}time '08:15'/i.test(migrationSql),
   "Administrator pricing does not calculate the next 08:15 Bolivia expiration.",
+);
+requireCondition(
+  /add column terms_accepted_at timestamptz[\s\S]{0,120}add column privacy_accepted_at timestamptz/i.test(
+    migrationSql,
+  ),
+  "Order acceptance timestamps are missing.",
+);
+requireCondition(
+  /revoke all on function public\.create_order\(uuid, text, text, jsonb\)[\s\S]{0,100}from public, anon, authenticated/i.test(
+    migrationSql,
+  ),
+  "Browser access to the internal checkout function was not revoked.",
+);
+requireCondition(
+  /revoke select on public\.campaign_settings from anon, authenticated/i.test(
+    migrationSql,
+  ),
+  "Raw campaign configuration remains browser-readable.",
 );
 
 for (const name of [...migrations, ...tests]) {

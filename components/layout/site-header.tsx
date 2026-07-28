@@ -3,10 +3,12 @@
 import Link from "next/link";
 
 import { useAuth } from "@/components/auth/auth-provider";
+import { useCart } from "@/components/cart/cart-provider";
 import { ButtonLink } from "@/components/ui/button";
 
 export function SiteHeader() {
   const { isAdmin, isAnonymous, loading, user } = useAuth();
+  const { itemCount } = useCart();
   const hasAccount = Boolean(user && !isAnonymous);
 
   return (
@@ -49,7 +51,7 @@ export function SiteHeader() {
             variant="ghost"
             className="hidden sm:flex"
           >
-            Carrito · 2
+            Carrito · {itemCount}
           </ButtonLink>
           <ButtonLink
             href={hasAccount ? "/mi-cuenta" : "/ingresar"}

@@ -20,7 +20,7 @@ Last updated: 28 July 2026 (`America/La_Paz`)
 |     4 | Identity and access    | completed | All automated checks passed     |
 |     5 | Public catalogue       | completed | All automated checks passed     |
 |     6 | Administrator products | completed | All automated checks passed     |
-|     7 | Cart and orders        | pending   | Requires explicit authorization |
+|     7 | Cart and orders        | completed | All automated checks passed     |
 |     8 | Order administration   | pending   | Requires explicit authorization |
 |     9 | Customer tracking      | pending   | Requires explicit authorization |
 |    10 | Hardening              | pending   | Requires explicit authorization |
@@ -278,7 +278,61 @@ Completed on 28 July 2026:
 - The local Supabase stack was stopped after validation with the clean seed data
   preserved.
 
+## Phase 7 scope
+
+Completed on 28 July 2026:
+
+- Device-local cart storing only product identifiers and quantities.
+- Real add, increase, decrease, remove, count, reload, and empty-cart behavior.
+- Safe catalogue revalidation on cart entry, checkout entry, and immediately before
+  submission.
+- Guest checkout using only name, Bolivian phone, accepted conditions, anonymous
+  Supabase Auth, and Turnstile support.
+- Account checkout using the existing permanent identity and profile defaults.
+- Acceptance timestamps stored in the same transaction as the order.
+- One session idempotency key per unchanged cart attempt.
+- Authoritative PostgreSQL totals, price snapshots, row locks, stock validation,
+  and 15-minute inventory reservations.
+- Ownership-checked confirmation with immutable items and the configured WhatsApp
+  number.
+- Real QR-request and payment-reported `wa.me` messages using the order number,
+  total, and customer name.
+- Payment reporting that extends the reservation to minute 25 but cannot mark an
+  order paid.
+- Removal of raw browser access to campaign configuration and the lower-level
+  checkout RPC.
+
+Excluded until later:
+
+- Administrative payment confirmation, private evidence, late-payment overrides,
+  and refunds (Phase 8).
+- Permanent-account order history and timeline integration (Phase 9).
+- Production Turnstile, OAuth, SMTP, Supabase, and hosting configuration (Phase 11).
+
+## Phase 7 validation record
+
+Completed on 28 July 2026:
+
+- `npm run format:check`: passed with exit code 0.
+- `npm run lint -- --max-warnings=0`: passed with exit code 0.
+- `npm run typecheck`: passed with exit code 0.
+- `npm run test`: 7 frontend test files and 17 tests passed.
+- `npm run db:check`: 7 migrations, 14 RLS tables, 23 secure functions, and
+  8 pgTAP suites passed structural validation.
+- `supabase db reset --local`: all 7 migrations and the seed applied cleanly.
+- `supabase test db`: 8 files and 135 assertions passed.
+- `supabase db lint --local --schema public --level warning --fail-on warning`: no
+  schema warnings or errors found.
+- `npm run smoke:orders`: signed guest checkout, database totals, 15/25-minute
+  limits, retry idempotency, internal-RPC denial, confirmation ownership, WhatsApp
+  contact, and payment reporting passed through the Supabase SDK.
+- `npm run build`: 25 static pages generated across 24 application routes.
+- `npm run smoke:static`: 17 representative URLs returned HTTP 200 and the
+  temporary server closed itself.
+- The local database was reset after the smoke test, then Supabase was stopped with
+  clean seed data preserved.
+
 ## Next phase
 
-Phase 7 — Cart and orders. It requires explicit user authorization and must not begin
-automatically.
+Phase 8 — Order administration. It requires explicit user authorization and must not
+begin automatically.

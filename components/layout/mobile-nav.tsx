@@ -1,13 +1,18 @@
+"use client";
+
 import Link from "next/link";
+
+import { useCart } from "@/components/cart/cart-provider";
 
 const navItems = [
   { href: "/", label: "Inicio", icon: "⌂" },
   { href: "/buscar", label: "Buscar", icon: "⌕" },
-  { href: "/carrito", label: "Carrito", icon: "2" },
+  { href: "/carrito", label: "Carrito", icon: "cart" },
   { href: "/mis-pedidos", label: "Pedidos", icon: "✓" },
 ] as const;
 
 export function MobileNav({ active = "" }: { active?: string }) {
+  const { itemCount } = useCart();
   return (
     <nav
       aria-label="Navegación principal"
@@ -26,7 +31,7 @@ export function MobileNav({ active = "" }: { active?: string }) {
                 }`}
               >
                 <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-surface-soft px-1 text-xs">
-                  {item.icon}
+                  {item.icon === "cart" ? itemCount : item.icon}
                 </span>
                 {item.label}
               </Link>

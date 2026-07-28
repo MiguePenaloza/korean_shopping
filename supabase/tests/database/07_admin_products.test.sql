@@ -283,7 +283,7 @@ select ok(
   (
     select count(*)
     from public.admin_preview_available_prices(
-      (select current_exchange_rate_id from public.campaign_settings where id = 1)
+      (select exchange_rate_id from public.admin_get_pricing_context())
     )
   ) >= 1,
   'bulk price preview includes active products with remaining stock'
@@ -293,7 +293,7 @@ select lives_ok(
   $$
     select *
     from public.admin_refresh_available_prices_now(
-      (select current_exchange_rate_id from public.campaign_settings where id = 1)
+      (select exchange_rate_id from public.admin_get_pricing_context())
     )
   $$,
   'bulk price refresh uses the database-calculated expiration'

@@ -122,20 +122,24 @@ select set_config(
 
 insert into reservation_test_results
 select *
-from public.create_order(
+from public.submit_order(
   '95000000-0000-4000-8000-000000000001',
   'Test Customer One',
   '71234567',
-  '[{"product_id":"93000000-0000-4000-8000-000000000001","quantity":1}]'
+  '[{"product_id":"93000000-0000-4000-8000-000000000001","quantity":1}]',
+  true,
+  true
 );
 
 insert into reservation_test_results
 select *
-from public.create_order(
+from public.submit_order(
   '95000000-0000-4000-8000-000000000001',
   'Test Customer One',
   '71234567',
-  '[{"product_id":"93000000-0000-4000-8000-000000000001","quantity":1}]'
+  '[{"product_id":"93000000-0000-4000-8000-000000000001","quantity":1}]',
+  true,
+  true
 );
 
 reset role;
@@ -173,11 +177,13 @@ select set_config(
 select throws_ok(
   $$
     select *
-    from public.create_order(
+    from public.submit_order(
       '95000000-0000-4000-8000-000000000002',
       'Test Customer Two',
       '70000000',
-      '[{"product_id":"93000000-0000-4000-8000-000000000001","quantity":1}]'
+      '[{"product_id":"93000000-0000-4000-8000-000000000001","quantity":1}]',
+      true,
+      true
     );
   $$,
   'P0001',
@@ -193,7 +199,7 @@ select set_config(
 
 select lives_ok(
   format(
-    'select public.report_order_payment(%L::uuid)',
+    'select * from public.report_own_order_payment(%L::uuid)',
     (select order_id from reservation_test_results limit 1)
   ),
   'the owner can report payment inside the first window'

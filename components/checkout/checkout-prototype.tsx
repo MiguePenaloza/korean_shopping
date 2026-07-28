@@ -1,40 +1,114 @@
 "use client";
 
-import { type FormEvent, useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
+import { useCart } from "@/components/cart/cart-provider";
 import { Alert } from "@/components/ui/alert";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
-import { MockNotice } from "@/components/ui/mock-notice";
 import { ensureGuestSession } from "@/lib/auth/guest-session";
 import { getCustomerAuthMessage } from "@/lib/auth/messages";
 import { isValidFullName, normalizeBolivianPhoneInput } from "@/lib/auth/validation";
+import {
+  cartFingerprint,
+  checkoutAttemptStorageKey,
+  resolveCheckoutAttempt,
+} from "@/lib/cart/cart";
+import { getCatalogueProductsByIds } from "@/lib/catalogue/catalogue";
 import { formatBob } from "@/lib/money/format";
+import { submitOrder } from "@/lib/orders/orders";
+import type { Product } from "@/types/product";
+
+function checkoutErrorMessage(error: unknown) {
+  const code = error instanceof Error ? error.message : "";
+  if (code === "ORDERING_CLOSED") {
+    return "Los pedidos están cerrados temporalmente.";
+  }
+  if (code === "PRICE_EXPIRED") {
+    return "El precio de un producto venció. Vuelve al carrito para actualizarlo.";
+  }
+  if (code === "ITEM_UNAVAILABLE" || code === "INSUFFICIENT_STOCK") {
+    return "Una cantidad ya no está disponible. Vuelve al carrito y actualízalo.";
+  }
+  return "No pudimos confirmar el pedido. Revisa tu conexión e inténtalo otra vez.";
+}
 
 export function CheckoutPrototype() {
-  const { configured, isAnonymous, profile, user } = useAuth();
-  const [confirmed, setConfirmed] = useState(false);
+  const router = useRouter();
+  const { configured, isAnonymous, loading: authLoading, profile, user } = useAuth();
+  const { clearCart, items, ready } = useCart();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [captchaToken, setCaptchaToken] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const submitting = useRef(false);
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
   const localCaptchaBypass = process.env.NODE_ENV !== "production" && !siteKey;
   const needsAnonymousSession = !user;
+
   const handleCaptchaToken = useCallback((token: string) => {
     setCaptchaToken(token);
   }, []);
 
+  const revalidate = useCallback(async () => {
+    if (!configured || !items.length) {
+      setProducts([]);
+      setStatus("ready");
+      return [];
+    }
+    setStatus("loading");
+    try {
+      const current = await getCatalogueProductsByIds(
+        items.map((item) => item.productId),
+      );
+      setProducts(current);
+      setStatus("ready");
+      return current;
+    } catch {
+      setStatus("error");
+      return [];
+    }
+  }, [configured, items]);
+
+  useEffect(() => {
+    if (!ready) return;
+    const timer = window.setTimeout(() => {
+      void revalidate();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [ready, revalidate]);
+
+  const productById = useMemo(
+    () => new Map(products.map((product) => [product.id, product])),
+    [products],
+  );
+  const validCart =
+    items.length > 0 &&
+    products.length === items.length &&
+    items.every((item) => {
+      const product = productById.get(item.productId);
+      return product?.availability === "available" && product.priceBob !== null;
+    });
+  const total = items.reduce(
+    (sum, item) => sum + (productById.get(item.productId)?.priceBob ?? 0) * item.quantity,
+    0,
+  );
+
   async function confirmCheckout(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting.current) return;
     const form = new FormData(event.currentTarget);
-    const fullName = String(form.get("fullName") ?? "").trim();
+    const customerName = String(form.get("customerName") ?? "").trim();
     const phone = normalizeBolivianPhoneInput(String(form.get("phone") ?? ""));
 
-    if (!isValidFullName(fullName)) {
-      setMessage("Escribe un nombre completo válido.");
+    if (!isValidFullName(customerName)) {
+      setMessage("Escribe un nombre válido.");
       return;
     }
     if (!phone) {
@@ -46,7 +120,11 @@ export function CheckoutPrototype() {
       return;
     }
     if (!configured) {
-      setMessage("La conexión segura todavía no está configurada en este entorno.");
+      setMessage("La conexión segura todavía no está configurada.");
+      return;
+    }
+    if (!items.length) {
+      setMessage("Tu carrito está vacío.");
       return;
     }
     if (needsAnonymousSession && !captchaToken && !localCaptchaBypass) {
@@ -54,36 +132,81 @@ export function CheckoutPrototype() {
       return;
     }
 
+    submitting.current = true;
     setBusy(true);
     setMessage("");
     try {
+      const currentProducts = await revalidate();
+      const currentById = new Map(
+        currentProducts.map((product) => [product.id, product]),
+      );
+      const stillValid =
+        currentProducts.length === items.length &&
+        items.every((item) => {
+          const product = currentById.get(item.productId);
+          return product?.availability === "available" && product.priceBob !== null;
+        });
+      if (!stillValid) {
+        setMessage(
+          "El precio o la disponibilidad cambió. Revisa el carrito antes de continuar.",
+        );
+        return;
+      }
+
       if (!user) {
         await ensureGuestSession(captchaToken || undefined);
       }
-      setConfirmed(true);
+
+      const fingerprint = cartFingerprint(items);
+      const attempt = resolveCheckoutAttempt(
+        window.sessionStorage.getItem(checkoutAttemptStorageKey),
+        fingerprint,
+        () => crypto.randomUUID(),
+      );
+      window.sessionStorage.setItem(checkoutAttemptStorageKey, JSON.stringify(attempt));
+
+      const order = await submitOrder({
+        idempotencyKey: attempt.idempotencyKey,
+        customerName,
+        phone,
+        items,
+      });
+      clearCart();
+      window.sessionStorage.removeItem(checkoutAttemptStorageKey);
+      router.push(`/pedido-confirmado?id=${encodeURIComponent(order.id)}`);
     } catch (error) {
-      setMessage(getCustomerAuthMessage(error, "guest"));
+      if (
+        error instanceof Error &&
+        (error.message === "SUPABASE_NOT_CONFIGURED" ||
+          error.message.includes("ANONYMOUS"))
+      ) {
+        setMessage(getCustomerAuthMessage(error, "guest"));
+      } else {
+        setMessage(checkoutErrorMessage(error));
+      }
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   }
 
-  if (confirmed) {
+  if (!ready || status === "loading" || authLoading) {
     return (
-      <Card className="mx-auto mt-8 max-w-xl p-6 text-center sm:p-8">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success-soft text-2xl text-success">
-          ✓
-        </span>
-        <p className="mt-5 text-sm font-bold text-accent">Pedido BP-2607-123</p>
-        <h1 className="mt-2 text-3xl font-black">¡Sesión preparada!</h1>
-        <p className="mt-3 leading-7 text-muted">
-          Tu identidad segura está lista. La reserva y el pedido continúan simulados hasta
-          la Fase 7.
-        </p>
-        <ButtonLink href="/pedido-confirmado" className="mt-6 w-full">
-          Ver demostración de pago
-        </ButtonLink>
-      </Card>
+      <p className="mt-6 text-muted" role="status">
+        Actualizando pedido…
+      </p>
+    );
+  }
+
+  if (!items.length) {
+    return (
+      <div className="mt-6">
+        <EmptyState
+          title="Tu carrito está vacío"
+          description="Agrega productos antes de confirmar un pedido."
+          action={<ButtonLink href="/buscar">Buscar productos</ButtonLink>}
+        />
+      </div>
     );
   }
 
@@ -97,30 +220,35 @@ export function CheckoutPrototype() {
         </p>
         {user && !isAnonymous ? (
           <p className="mt-4 rounded-xl bg-success-soft p-4 text-sm font-semibold text-success">
-            Estás comprando con tu cuenta. Este pedido podrá aparecer en tu historial
-            cuando se conecten los pedidos reales.
+            Estás comprando con tu cuenta. El pedido quedará asociado de forma segura a tu
+            perfil.
           </p>
         ) : null}
         {!configured ? (
           <Alert className="mt-4" title="Configuración local pendiente">
-            Agrega las variables públicas de Supabase para crear la sesión de invitado.
+            Agrega las variables públicas de Supabase para confirmar pedidos.
           </Alert>
         ) : null}
-        {needsAnonymousSession && !siteKey && !localCaptchaBypass ? (
-          <Alert className="mt-4" title="Verificación no configurada">
-            Este entorno necesita la clave pública de Turnstile antes de aceptar pedidos
-            como invitado.
+        {status === "error" ? (
+          <Alert className="mt-4" title="No pudimos actualizar el pedido">
+            Regresa al carrito y revisa tu conexión.
+          </Alert>
+        ) : null}
+        {!validCart && status === "ready" ? (
+          <Alert className="mt-4" title="El carrito cambió">
+            Un producto ya no tiene precio o disponibilidad vigente. Regresa al carrito
+            para revisarlo.
           </Alert>
         ) : null}
         {message ? (
-          <Alert className="mt-4" title="Revisa los datos" role="alert">
+          <Alert className="mt-4" title="Revisa el pedido" role="alert">
             {message}
           </Alert>
         ) : null}
         <div className="mt-5 grid gap-4">
           <Input
-            label="Nombre completo"
-            name="fullName"
+            label="Nombre"
+            name="customerName"
             defaultValue={user && !isAnonymous ? profile?.fullName : undefined}
             placeholder="Ej.: María Fernández"
             autoComplete="name"
@@ -167,36 +295,44 @@ export function CheckoutPrototype() {
         </div>
       </Card>
       <Card className="h-fit p-5">
-        <h2 className="text-xl font-bold">Total del pedido</h2>
+        <h2 className="text-xl font-bold">Total actualizado</h2>
         <div className="mt-4 space-y-3 text-sm">
-          <div className="flex justify-between gap-4">
-            <span className="text-muted">1 × Relief Sun</span>
-            <span>{formatBob(168)}</span>
-          </div>
-          <div className="flex justify-between gap-4">
-            <span className="text-muted">2 × Juicy Tint</span>
-            <span>{formatBob(238)}</span>
-          </div>
+          {items.map((item) => {
+            const product = productById.get(item.productId);
+            return (
+              <div key={item.productId} className="flex justify-between gap-4">
+                <span className="text-muted">
+                  {item.quantity} × {product?.name ?? "Producto no disponible"}
+                </span>
+                <span>{formatBob((product?.priceBob ?? 0) * item.quantity)}</span>
+              </div>
+            );
+          })}
         </div>
         <div className="mt-4 flex justify-between border-t border-border pt-4 text-xl font-black">
           <span>Total</span>
-          <span>{formatBob(406)}</span>
+          <span>{formatBob(total)}</span>
         </div>
+        <p className="mt-3 text-sm leading-5 text-muted">
+          Al confirmar, PostgreSQL volverá a validar precios e inventario y reservará las
+          unidades durante 15 minutos.
+        </p>
         <Button
           className="mt-5 w-full"
           type="submit"
           disabled={
             busy ||
             !configured ||
+            !validCart ||
+            status !== "ready" ||
             (needsAnonymousSession && !siteKey && !localCaptchaBypass)
           }
         >
-          {busy ? "Preparando…" : "Confirmar pedido"}
+          {busy ? "Confirmando…" : "Confirmar pedido"}
         </Button>
         <ButtonLink href="/carrito" className="mt-2 w-full" variant="ghost">
           Volver al carrito
         </ButtonLink>
-        <MockNotice className="mt-4" />
       </Card>
     </form>
   );

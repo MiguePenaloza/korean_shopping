@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AuthProvider } from "@/components/auth/auth-provider";
+import { CartProvider } from "@/components/cart/cart-provider";
 
 import "./globals.css";
 
@@ -21,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="es" className="h-full antialiased">
       <body className="flex min-h-full flex-col">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <CartProvider>{children}</CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

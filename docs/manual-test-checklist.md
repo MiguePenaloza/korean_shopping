@@ -135,3 +135,28 @@ Manual review before Phase 7:
 - [ ] Review exact total, confirmed, reserved, and remaining units as administrator.
 - [ ] Save a reviewed rate, compare every previewed price, and confirm the update.
 - [ ] Check product creation and bulk repricing at 320 px with keyboard navigation.
+
+## Phase 7
+
+Automated:
+
+- [x] Malformed local-cart data is rejected and quantities are capped at 20.
+- [x] One idempotency key is reused for retries of an unchanged cart.
+- [x] Checkout requires a signed identity and both acceptance flags.
+- [x] The internal checkout RPC is unavailable to browser identities.
+- [x] Database totals and reservation deadlines are authoritative.
+- [x] Another identity cannot read an order confirmation.
+- [x] Payment reporting changes only `payment_reported` and extends to minute 25.
+- [x] WhatsApp messages contain the real order number, total, and customer name.
+
+Manual review before Phase 8:
+
+- [ ] Add, increase, decrease, and remove products using a target Android phone.
+- [ ] Reload the browser and confirm the local cart remains.
+- [ ] Confirm an expired, removed, or fully reserved product blocks checkout.
+- [ ] Complete a guest checkout using only name and phone.
+- [ ] Complete checkout while signed in and confirm the cart survives sign-in.
+- [ ] Double-tap `Confirmar pedido` on slow mobile data and confirm one order.
+- [ ] Open both WhatsApp buttons on a physical phone and review the messages.
+- [ ] Wait past minutes 15 and 25 and confirm the correct actions are disabled.
+- [ ] Review the full cart and confirmation flow at 320 px and with keyboard only.

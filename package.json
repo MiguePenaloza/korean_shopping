@@ -9,6 +9,7 @@
     "smoke:auth": "node scripts/auth-smoke.mjs",
     "smoke:catalogue": "node scripts/catalogue-smoke.mjs",
     "smoke:admin-products": "node scripts/admin-products-smoke.mjs",
+    "smoke:orders": "node scripts/orders-smoke.mjs",
     "db:check": "node scripts/validate-supabase.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",

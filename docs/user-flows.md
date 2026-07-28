@@ -18,12 +18,14 @@ that it awaits the official exchange-rate update.
 1. Browse products.
 2. Add valid items to the local cart.
 3. Revalidate the cart.
-4. Choose `Continuar sin cuenta`.
-5. Enter name, phone, and accept conditions.
-6. Create a 15-minute reservation.
-7. Request the QR through WhatsApp.
-8. Report payment through the application and WhatsApp.
-9. Continue communication through WhatsApp; no web history is provided.
+4. Enter name, phone, and accept conditions; no email is required.
+5. Supabase creates a protected anonymous identity when needed.
+6. PostgreSQL revalidates price and stock, then creates a 15-minute reservation.
+7. The confirmation uses the immutable database total.
+8. `Solicitar QR por WhatsApp` opens the configured administrator conversation.
+9. `Avisar pago realizado` records `payment_reported`, extends the reservation to
+   minute 25, and opens WhatsApp.
+10. Continue communication through WhatsApp; no web history is provided.
 
 ## Permanent customer order
 

@@ -10,7 +10,7 @@ export default function CheckoutPage() {
     <CustomerShell>
       <main className="page-container">
         <p className="text-sm font-bold text-accent">Paso 2 de 2</p>
-        <h1 className="mt-1 text-3xl font-black">Confirma como invitado</h1>
+        <h1 className="mt-1 text-3xl font-black">Confirma tu pedido</h1>
         <CheckoutPrototype />
       </main>
     </CustomerShell>

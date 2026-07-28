@@ -235,3 +235,22 @@ export async function getCatalogueProduct(id: string): Promise<Product | null> {
 
   return { ...mapCatalogueRow(productResult.data), images };
 }
+
+export async function getCatalogueProductsByIds(ids: string[]): Promise<Product[]> {
+  if (!ids.length) return [];
+  const uniqueIds = Array.from(new Set(ids)).slice(0, 20);
+  const { data, error } = await requireClient()
+    .from("public_catalogue")
+    .select(
+      "id, code, name, brand, description, variant, category_name, price_bob, price_expires_at, availability, thumbnail_path, thumbnail_alt",
+    )
+    .in("id", uniqueIds);
+
+  if (error) throw new Error("CART_REVALIDATION_UNAVAILABLE");
+  const products = (Array.isArray(data) ? data : []).map(mapCatalogueRow);
+  const byId = new Map(products.map((product) => [product.id, product]));
+  return uniqueIds.flatMap((id) => {
+    const product = byId.get(id);
+    return product ? [product] : [];
+  });
+}

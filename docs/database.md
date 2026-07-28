@@ -2,7 +2,7 @@
 
 ## Current result
 
-The Supabase schema is defined by six ordered migrations:
+The Supabase schema is defined by seven ordered migrations:
 
 1. `20260727010000_initial_schema.sql` — types, tables, constraints, indexes, and
    RLS activation.
@@ -19,6 +19,9 @@ The Supabase schema is defined by six ordered migrations:
 6. `20260728010000_administrator_products.sql` — thumbnail metadata, safe product
    media view, administrator product/rate RPCs, exact-inventory listing, and
    database-derived price expiration.
+7. `20260728020000_cart_orders_whatsapp.sql` — acceptance timestamps, public
+   checkout wrapper, ownership-checked confirmation, reduced campaign visibility,
+   and explicit payment-report privileges.
 
 `supabase/seed.sql` contains development-only categories, rates, products, and
 price versions. It contains no real customer or payment data.
@@ -63,7 +66,7 @@ and calculated amounts are immutable.
 ### Orders and inventory
 
 - `orders`: customer/guest data, public number, payment/order states, totals,
-  idempotency, and deadlines.
+  idempotency, deadlines, and purchase/privacy acceptance timestamps.
 - `order_items`: immutable product and price snapshots.
 - `inventory_reservations`: active, converted, released, or expired units.
 - `order_status_history`: automatic status/payment audit.
@@ -99,7 +102,8 @@ inputs and results.
 
 ## Transaction and concurrency rules
 
-`create_order`:
+`submit_order` verifies both acceptance flags and then calls the internal
+`create_order` transaction:
 
 1. Requires a Supabase identity, including an anonymous signed-in identity.
 2. Checks the campaign switch using database time.
@@ -114,6 +118,11 @@ inputs and results.
 
 The lock order is consistent across checkout, administrative payment confirmation,
 and expiration work. This prevents overselling and reduces deadlock risk.
+
+Browser identities cannot execute `create_order` directly. This prevents bypassing
+the acceptance check. `get_own_order_confirmation` checks JWT ownership and returns
+only the fields, item snapshots, deadlines, and WhatsApp contact needed on the
+confirmation screen. Raw campaign configuration is not browser-readable.
 
 `report_order_payment` can be called only by the order owner during the initial
 window. It records `payment_reported` and extends reservations to the minute-25
@@ -160,6 +169,8 @@ path, and creation time. No automatic evidence deletion is configured.
   privacy, and pagination.
 - Administrator product creation and publication, image limits, exact inventory,
   reviewed-rate creation, fixed 3% contingency, and bulk repricing.
+- Checkout acceptance, signed guest identity, ownership isolation, idempotent
+  confirmation, 15/25-minute deadlines, and WhatsApp contact projection.
 
 Local execution requires Docker and the Supabase CLI:
 
@@ -172,12 +183,12 @@ supabase test db
 The repository-level `npm run db:check` is a finite structural check. It does not
 replace applying the migrations to PostgreSQL or executing pgTAP.
 
-Verified locally on 27 July 2026 with Docker Engine 29.6.2 and Supabase CLI
-2.110.0:
+Verified locally on 28 July 2026 with Docker and Supabase CLI:
 
-- A clean `supabase db reset` applied all five migrations and the seed.
-- `supabase test db` passed 6 files and 89 assertions.
-- `supabase db lint --local --level warning` reported no schema errors.
+- A clean `supabase db reset` applied all seven migrations and the seed.
+- `supabase test db` passed 8 files and 135 assertions.
+- `supabase db lint --local --schema public --level warning --fail-on warning`
+  reported no schema warnings or errors.
 
 ## Migration discipline
 

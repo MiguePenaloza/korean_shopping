@@ -16,10 +16,10 @@ only to the roles that need each RPC.
 | ------------------------ | ------------------------------ | ------------------------------ | ------------------------------------ |
 | `public_catalogue`       | Safe projection/search         | Safe projection/search         | Safe projection/search               |
 | `public_categories`      | Active names and slugs         | Active names and slugs         | Active names and slugs               |
-| `campaign_settings`      | Read                           | Read                           | Read/write                           |
+| `campaign_settings`      | No raw access                  | No raw access                  | Secure RPC only                      |
 | `profiles`               | None                           | Own read; validated update RPC | All rows; role bootstrap is trusted  |
-| Categories/products      | No raw access                  | No raw access                  | Read/write                           |
-| Rates and observations   | None                           | None                           | Read/write                           |
+| Categories/products      | No raw access                  | No raw access                  | Secure RPC                           |
+| Rates and observations   | None                           | None                           | Secure RPC                           |
 | Price versions           | No raw access                  | No raw access                  | Read; writes through secure RPC      |
 | Orders                   | None without anonymous sign-in | Own read                       | Read; transitions through secure RPC |
 | Order items              | None                           | Own read, immutable            | Read, immutable                      |
@@ -51,6 +51,12 @@ mutations still require functions:
 - Late-payment acceptance records an immutable reason.
 - Cron expiration cannot be called by browser roles.
 
+The browser-facing `submit_order` requires purchase-condition and privacy
+acceptance. The lower-level checkout function is revoked from browser roles.
+Acceptance timestamps are written in the same database transaction as the order.
+Raw campaign settings are hidden; the configured WhatsApp contact is returned only
+inside an ownership-checked order confirmation.
+
 A product trigger prevents direct changes to `confirmed_stock` outside trusted
 database execution.
 
@@ -76,6 +82,7 @@ service-role key must never be copied into this static application.
 | Browser changes price or total      | Secure checkout ignores browser totals and uses active price versions |
 | Two customers order the final unit  | Deterministic product row locks and active-reservation subtraction    |
 | Double click or network retry       | Unique `(actor_id, idempotency_key)` and existing-order return        |
+| Checkout bypasses legal acceptance  | Public wrapper requires both flags; internal RPC is browser-revoked   |
 | Customer marks own order paid       | No direct update grant; report RPC can set only `payment_reported`    |
 | Expired browser clock               | `clock_timestamp()` controls prices and reservations                  |
 | Claiming guest orders by phone      | Ownership uses JWT actor/customer ID, never phone matching            |
@@ -113,12 +120,14 @@ Implemented:
 Executed against the local Supabase PostgreSQL stack:
 
 - Clean database reset with all migrations and seed.
-- Five pgTAP files with 74 successful assertions.
+- Eight pgTAP files with 135 successful assertions.
 - Supabase database lint at warning level with no schema errors.
 - Browser-client Auth smoke test for anonymous isolation, account profile creation,
   direct-mutation denial, and validated profile updates.
 - Anonymous-client catalogue smoke test for safe categories, filtering, page-size
   enforcement, exact-inventory isolation, and denial of raw-product reads.
+- Signed guest-order smoke test for database totals, 15/25-minute limits,
+  idempotency, ownership isolation, and payment reporting.
 
 A sustained two-connection concurrency stress test remains part of Phase 10. The
 Phase 3 reservation suite already verifies final-unit exclusion through the secure
