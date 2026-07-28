@@ -5,9 +5,9 @@ durante un viaje de compras a Corea.
 
 ## Estado
 
-La Fase 3 añade el esquema, seguridad y funciones transaccionales de Supabase. La
-interfaz todavía usa datos simulados y se conectará por funciones en fases
-posteriores.
+La Fase 4 conecta Supabase Auth para invitados, Google, correo/contraseña, perfiles,
+recuperación y control de acceso. El catálogo y los pedidos todavía usan datos
+simulados y se conectarán en sus fases posteriores.
 
 Consulta [docs/implementation-status.md](docs/implementation-status.md) para conocer
 el avance y la siguiente fase autorizable.
@@ -35,7 +35,7 @@ seguras y Cron. No habrá un backend Node.js persistente.
 ## Configuración
 
 1. Copiar `.env.example` como `.env.local`.
-2. Mantener vacías las variables de Supabase durante las Fases 1 y 2.
+2. Copiar la URL y clave pública del entorno local de Supabase.
 3. Instalar dependencias con `npm install`.
 4. Iniciar el entorno con `npm run dev`.
 5. Abrir `http://localhost:3000`.
@@ -63,6 +63,7 @@ npm run format
 npm run format:check
 npm run build
 npm run smoke:static
+npm run smoke:auth
 npm run db:check
 ```
 
@@ -71,14 +72,17 @@ npm run db:check
 principales con un timeout y cierra el servidor automáticamente.
 `npm run db:check` valida de forma finita la estructura de migraciones, RLS,
 funciones, Storage, Cron y pruebas SQL.
+`npm run smoke:auth` requiere `BP_SUPABASE_URL` y
+`BP_SUPABASE_PUBLISHABLE_KEY`; crea identidades desechables en la base local y
+comprueba la separación entre invitado y cuenta.
 
 ## Base de datos y administrador
 
 Las migraciones, políticas RLS, buckets y pruebas pgTAP están en `supabase/`. Para
-aplicarlas localmente se requieren Docker y Supabase CLI. La autenticación y el
-procedimiento seguro para crear el primer administrador llegarán en la Fase 4.
-No deben hacerse cambios manuales de esquema que no estén representados por una
-migración.
+aplicarlas localmente se requieren Docker y Supabase CLI. El primer administrador
+se asigna con `promote_admin_by_email` desde un contexto confiable, según
+`docs/deployment.md`. No deben hacerse cambios manuales de esquema que no estén
+representados por una migración.
 
 ## Despliegue
 
@@ -100,13 +104,11 @@ catálogo ni los pedidos existentes.
 
 - Los productos, pedidos, clientes y tasas son datos simulados.
 - Los botones de WhatsApp solo previsualizan el mensaje y no abren la aplicación.
-- El ingreso, el checkout, la carga de imágenes y las acciones administrativas no
-  persisten cambios.
-- La interfaz no está conectada todavía a Supabase.
-- El entorno Supabase local ya fue recreado desde cero y sus 62 pruebas pgTAP
+- El ingreso, registro, recuperación, perfiles y sesión anónima ya usan Supabase.
+- El checkout prepara la identidad, pero todavía no crea una reserva o pedido real.
+- La carga de imágenes y las acciones administrativas todavía no persisten cambios.
+- El entorno Supabase local ya fue recreado desde cero y sus 74 pruebas pgTAP
   están aprobadas.
-- La creación de identidades, perfiles y primer administrador pertenece a la
-  Fase 4.
 
 ## Documentación
 

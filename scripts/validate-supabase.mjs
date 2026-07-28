@@ -23,8 +23,8 @@ function occurrences(source, pattern) {
 
 requireCondition(migrations.length >= 3, "Expected at least three ordered migrations.");
 requireCondition(
-  tests.length >= 4,
-  "Expected schema, security, business, and reservation tests.",
+  tests.length >= 5,
+  "Expected schema, security, business, reservation, and identity tests.",
 );
 
 const migrationSql = migrations
@@ -71,6 +71,9 @@ const requiredFunctions = [
   "expire_inventory_reservations",
   "admin_confirm_order_paid",
   "expire_due_records",
+  "handle_new_auth_user",
+  "upsert_own_profile",
+  "promote_admin_by_email",
 ];
 
 for (const functionName of requiredFunctions) {
@@ -127,6 +130,16 @@ requireCondition(
     migrationSql,
   ),
   "Direct customer order mutation grant found.",
+);
+requireCondition(
+  /revoke update on public\.profiles from authenticated/i.test(migrationSql),
+  "Direct browser profile updates must be revoked.",
+);
+requireCondition(
+  /grant execute on function public\.promote_admin_by_email\(text, text\) to service_role/i.test(
+    migrationSql,
+  ),
+  "Admin bootstrap must be restricted to the service role.",
 );
 
 for (const name of [...migrations, ...tests]) {

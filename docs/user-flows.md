@@ -19,6 +19,35 @@ preserved, and the resulting order appears in `Mis pedidos`.
 
 Guest orders are not attached to a later account based only on matching phone numbers.
 
+## Identity and account
+
+### Guest
+
+1. Enter name and Bolivian mobile number at checkout.
+2. Accept conditions and privacy.
+3. Complete Turnstile when no session exists.
+4. Supabase creates a protected anonymous Auth user.
+5. No permanent profile or web history is created.
+6. Continue coordination through WhatsApp.
+
+### Optional account
+
+1. Choose Google or email/password.
+2. Supabase verifies the provider or confirmation link.
+3. PostgreSQL creates a customer profile from safe metadata.
+4. The customer can update name and phone through a validated RPC.
+5. `Mis pedidos` is available only for orders created while using that account.
+
+### Password recovery
+
+1. Enter the account email.
+2. Receive a one-time recovery link.
+3. Return through the PKCE callback.
+4. Set a new password of at least 8 characters.
+
+The interface always shows a neutral response for recovery requests, so it does not
+reveal whether an email is registered.
+
 ## Administrator product flow
 
 1. Confirm the current exchange-rate inputs.

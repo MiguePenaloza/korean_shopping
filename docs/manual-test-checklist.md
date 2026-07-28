@@ -70,3 +70,25 @@ Local Supabase runtime:
 - [ ] Handle late payment and refund.
 - [ ] Confirm customer/admin data isolation.
 - [ ] Close ordering without deleting history.
+
+## Phase 4
+
+Automated:
+
+- [x] Permanent signup creates a normalized customer profile.
+- [x] Anonymous Auth creates no permanent profile.
+- [x] Direct browser profile updates are denied.
+- [x] Validated own-profile RPC succeeds.
+- [x] Browser roles cannot execute administrator bootstrap.
+- [x] All five pgTAP files pass with 74 assertions.
+- [x] Database lint reports no schema errors.
+
+Manual review before Phase 5:
+
+- [ ] Configure Google OAuth and complete a real Google round trip.
+- [ ] Open the local confirmation email in Mailpit.
+- [ ] Complete password recovery from Mailpit.
+- [ ] Complete Turnstile in a non-local test environment.
+- [ ] Confirm an anonymous visitor cannot open `Mis pedidos`.
+- [ ] Confirm a customer cannot open `/admin`.
+- [ ] Confirm the promoted administrator can open `/admin`.

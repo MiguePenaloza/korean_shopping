@@ -21,25 +21,32 @@ Mobile browser
 
 ## Current implementation
 
-Next.js uses `output: "export"` and `trailingSlash: true`. It does not use API
-routes, Server Actions, request cookies, runtime dynamic routes, or default image
-optimization.
+Next.js uses `output: "export"`. It does not use API routes, Server Actions,
+request cookies, runtime dynamic routes, or default image optimization.
 
 Runtime entities will use static routes plus query parameters, for example
 `/producto?id=...`, so products created after deployment do not require a rebuild.
 
-Phase 3 adds a disconnected Supabase backend definition:
+The Supabase backend contains:
 
-- Three ordered SQL migrations.
-- Four pgTAP suites and development seed data.
+- Four ordered SQL migrations.
+- Five pgTAP suites and development seed data.
 - Public catalogue projection with no exact stock or cost fields.
 - Secure RPC boundaries for prices, checkout, payment reporting, and payment
   confirmation.
 - Public product-image and private payment-evidence buckets.
 - Minute-level database expiration Cron.
 
-The Next.js prototype still uses mock data. Supabase client wiring belongs to later
-phases.
+Phase 4 connects only identity and access through the browser-safe Supabase client:
+
+- Supabase anonymous Auth for guest checkout actors.
+- Google OAuth and email/password for optional permanent accounts.
+- PKCE callback, email confirmation, and password recovery routes.
+- Permanent profile creation in PostgreSQL; anonymous identities receive no profile.
+- Client account state and UX gates for account and administrator screens.
+- Cloudflare Turnstile token support for anonymous sign-in.
+
+Catalogue and order data still use mocks until their approved phases.
 
 ## Future data flow
 
@@ -66,3 +73,15 @@ functions are authoritative.
 - `tests/` contains frontend unit tests.
 - `scripts/validate-supabase.mjs` provides a finite structural database check when
   a local Supabase runtime is unavailable.
+- `scripts/auth-smoke.mjs` verifies the local Auth-to-profile boundary using only a
+  publishable key.
+
+## Static authentication flow
+
+The static site uses Supabase Auth directly from client components. OAuth and email
+links return to `/auth/callback`, where the browser exchanges the one-time PKCE code
+and then follows a same-site relative destination. No Next.js server, service-role
+key, or cookie middleware is introduced.
+
+The UI gates are for navigation and user experience. PostgreSQL RLS, grants, and
+secure RPC functions remain the authorization boundary.

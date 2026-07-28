@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "smoke:static": "node scripts/static-smoke.mjs",
+    "smoke:auth": "node scripts/auth-smoke.mjs",
     "db:check": "node scripts/validate-supabase.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -15,6 +16,7 @@
     "format:check": "prettier --check \"**/*\" --ignore-unknown"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.9",
     "next": "16.2.11",
     "react": "19.2.4",
     "react-dom": "19.2.4"

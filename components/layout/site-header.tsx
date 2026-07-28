@@ -1,8 +1,14 @@
+"use client";
+
 import Link from "next/link";
 
+import { useAuth } from "@/components/auth/auth-provider";
 import { ButtonLink } from "@/components/ui/button";
 
 export function SiteHeader() {
+  const { isAdmin, isAnonymous, loading, user } = useAuth();
+  const hasAccount = Boolean(user && !isAnonymous);
+
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-surface/95 backdrop-blur">
       <div className="mx-auto flex min-h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
@@ -27,6 +33,16 @@ export function SiteHeader() {
           </Link>
         </nav>
         <div className="flex items-center gap-2">
+          {isAdmin ? (
+            <ButtonLink
+              href="/admin"
+              size="sm"
+              variant="ghost"
+              className="hidden sm:flex"
+            >
+              Administrar
+            </ButtonLink>
+          ) : null}
           <ButtonLink
             href="/carrito"
             size="sm"
@@ -35,8 +51,12 @@ export function SiteHeader() {
           >
             Carrito · 2
           </ButtonLink>
-          <ButtonLink href="/ingresar" size="sm" variant="secondary">
-            Ingresar
+          <ButtonLink
+            href={hasAccount ? "/mi-cuenta" : "/ingresar"}
+            size="sm"
+            variant="secondary"
+          >
+            {loading ? "Cuenta" : hasAccount ? "Mi cuenta" : "Ingresar"}
           </ButtonLink>
         </div>
       </div>

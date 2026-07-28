@@ -17,7 +17,7 @@ Last updated: 27 July 2026 (`America/La_Paz`)
 |     1 | Local foundation       | completed | All automated checks passed     |
 |     2 | UI prototype           | completed | All automated checks passed     |
 |     3 | Supabase database      | completed | Structural validation passed    |
-|     4 | Identity and access    | pending   | Requires explicit authorization |
+|     4 | Identity and access    | completed | All automated checks passed     |
 |     5 | Public catalogue       | pending   | Requires explicit authorization |
 |     6 | Administrator products | pending   | Requires explicit authorization |
 |     7 | Cart and orders        | pending   | Requires explicit authorization |
@@ -94,8 +94,14 @@ Completed on 27 July 2026:
   `docs/manual-test-checklist.md`; these require human review.
 - The local Supabase stack is available through Docker. Production Supabase is not
   configured yet and remains part of Phase 11.
-- Real authentication, UI persistence, live Storage uploads, and WhatsApp behavior
-  remain intentionally disconnected.
+- Catalogue persistence, real order creation, live Storage uploads, and WhatsApp
+  behavior remain intentionally disconnected until their approved phases.
+- Google OAuth, production SMTP, production Turnstile, and the real administrator
+  account require provider configuration in Phase 11. Local email links are
+  inspectable through Mailpit.
+- `npm audit --omit=dev` reports three high advisories inherited through Next.js
+  (`postcss` and `sharp`). npm proposes a breaking downgrade to Next.js 9, so no
+  unsafe automatic fix was applied. Recheck during Phase 10 hardening.
 
 ## Phase 3 scope
 
@@ -135,7 +141,49 @@ Completed on 27 July 2026:
 - `supabase test db`: 4 files and 62 assertions passed.
 - `supabase db lint --local --level warning`: no schema errors found.
 
+## Phase 4 scope
+
+Completed on 27 July 2026:
+
+- Browser-safe Supabase client for the static Next.js export.
+- Protected anonymous Auth identity for guest checkout with Turnstile token support.
+- Google OAuth and email/password account entry.
+- Email signup confirmation, PKCE callback, and password recovery.
+- Permanent PostgreSQL profiles for non-anonymous users only.
+- Validated own-profile RPC with database phone normalization.
+- Explicit service-role/SQL procedure for the first administrator.
+- Account-aware header, customer-history gate, and administrator gate.
+- Safe Spanish Auth error messages without raw database or provider details.
+- Local Auth smoke test and identity pgTAP suite.
+- Identity, security, deployment, and manual-test documentation.
+
+Excluded until later:
+
+- Catalogue persistence and search integration (Phase 5).
+- Real checkout reservations, orders, and WhatsApp actions (Phase 7).
+- Production OAuth, SMTP, Turnstile, Supabase, and Cloudflare setup (Phase 11).
+
+## Phase 4 validation record
+
+Completed on 27 July 2026:
+
+- `npm run format:check`: passed with exit code 0.
+- `npm run lint -- --max-warnings=0`: passed with exit code 0.
+- `npm run typecheck`: passed with exit code 0.
+- `npm run test`: 3 frontend test files and 6 tests passed.
+- `npm run db:check`: 4 migrations, 14 RLS tables, 12 required secure functions,
+  and 5 pgTAP suites passed structural validation.
+- `supabase db reset --local`: all 4 migrations and seed applied cleanly.
+- `supabase test db`: 5 files and 74 assertions passed.
+- `supabase db lint --local --level warning`: no schema errors found.
+- `npm run smoke:auth`: anonymous isolation, permanent profile creation, direct
+  update denial, and validated RPC update passed through the browser SDK.
+- `npm run build`: 25 static pages generated across 24 application routes.
+- `npm run smoke:static`: 17 representative URLs returned HTTP 200 and the
+  temporary server closed itself.
+- The local Supabase stack was stopped after validation with data preserved.
+
 ## Next phase
 
-Phase 4 — Identity and access. It requires explicit user authorization and should
-not begin automatically. A local Supabase runtime is now available.
+Phase 5 — Public catalogue. It requires explicit user authorization and must not
+begin automatically.

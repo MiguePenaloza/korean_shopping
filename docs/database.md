@@ -1,8 +1,8 @@
 # Database
 
-## Phase 3 result
+## Current result
 
-The Supabase schema is defined by three ordered migrations:
+The Supabase schema is defined by four ordered migrations:
 
 1. `20260727010000_initial_schema.sql` — types, tables, constraints, indexes, and
    RLS activation.
@@ -11,6 +11,9 @@ The Supabase schema is defined by three ordered migrations:
    triggers, and the safe catalogue view.
 3. `20260727012000_rls_storage_cron.sql` — grants, policies, Storage buckets, and
    the expiration Cron job.
+4. `20260727013000_identity_and_access.sql` — permanent-profile creation,
+   anonymous isolation, validated own-profile updates, and trusted administrator
+   bootstrap.
 
 `supabase/seed.sql` contains development-only categories, rates, products, and
 price versions. It contains no real customer or payment data.
@@ -132,6 +135,8 @@ path, and creation time. No automatic evidence deletion is configured.
 - Phone normalization, approved price formula, timezone, and 3% contingency.
 - Final-unit reservation, idempotency, oversell prevention, payment reporting,
   and expiration.
+- Permanent signup profiles, anonymous isolation, profile privileges, and
+  administrator bootstrap.
 
 Local execution requires Docker and the Supabase CLI:
 
@@ -147,9 +152,8 @@ replace applying the migrations to PostgreSQL or executing pgTAP.
 Verified locally on 27 July 2026 with Docker Engine 29.6.2 and Supabase CLI
 2.110.0:
 
-- A clean `supabase db reset` applied all three migrations and the seed.
-- `supabase migration list --local` reported all three versions as applied.
-- `supabase test db` passed 4 files and 62 assertions.
+- A clean `supabase db reset` applied all four migrations and the seed.
+- `supabase test db` passed 5 files and 74 assertions.
 - `supabase db lint --local --level warning` reported no schema errors.
 
 ## Migration discipline
@@ -158,5 +162,5 @@ Verified locally on 27 July 2026 with Docker Engine 29.6.2 and Supabase CLI
 - Production must receive the same reviewed migrations.
 - Destructive rollback is not provided for order snapshots, payment history, or
   evidence. Corrective migrations must use a forward fix.
-- Phase 4 must create profiles and the first administrator without allowing a
-  browser-controlled role assignment.
+- Administrator bootstrap remains executable only from a trusted SQL or
+  service-role context and is never exposed to browser roles.

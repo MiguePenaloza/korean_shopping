@@ -29,6 +29,37 @@ Public configuration is copied from `.env.example` into the local and hosted
 environment. Provider secrets are configured directly in Supabase, Google,
 Cloudflare, or the SMTP provider and are never committed.
 
+## Phase 4 identity setup
+
+Local development:
+
+1. Run `supabase start`.
+2. Copy the local API URL and publishable key into `.env.local`.
+3. Leave `NEXT_PUBLIC_TURNSTILE_SITE_KEY` empty only while using `next dev`; the
+   checkout labels this local-only bypass.
+4. Open local Mailpit to inspect email confirmation and recovery messages.
+
+Production setup remains part of Phase 11:
+
+- Add the deployed site and `/auth/callback` to Supabase redirect URLs.
+- Configure Google OAuth in Google and Supabase; keep the client secret in Supabase.
+- Configure a production SMTP provider in Supabase Auth.
+- Configure Turnstile in Supabase Auth and expose only its site key to Next.js.
+- Keep email enumeration protection and sensible Auth rate limits enabled.
+
+After the administrator creates and confirms a permanent account, a trusted database
+operator can bootstrap it from the Supabase SQL editor:
+
+```sql
+select public.promote_admin_by_email(
+  'administrator@example.com',
+  'Initial production administrator'
+);
+```
+
+Never call this procedure from browser code and never place a service-role key in
+`.env.local` or Cloudflare public variables.
+
 ## Production checks
 
 - Static build and direct route loading.
