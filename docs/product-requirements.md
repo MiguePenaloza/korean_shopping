@@ -38,7 +38,8 @@ the next whole boliviano.
 - Weekend refreshes reuse the Friday rate after administrative confirmation.
 - Expired products remain visible but disabled.
 
-## Phase 1 boundary
+## Current implementation boundary
 
-Phase 1 contains only a static foundation, reusable UI, mock products,
-documentation, and local quality tooling. Functional screens begin in Phase 2.
+Through Phase 5, identity and the public catalogue use Supabase. Product
+administration, cart reservations, orders, payments, evidence, and WhatsApp actions
+remain simulated until their corresponding approved phases.

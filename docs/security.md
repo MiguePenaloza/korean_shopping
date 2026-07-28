@@ -14,7 +14,8 @@ only to the roles that need each RPC.
 
 | Resource                 | Anonymous/public               | Customer identity              | Administrator                        |
 | ------------------------ | ------------------------------ | ------------------------------ | ------------------------------------ |
-| `public_catalogue`       | Safe projection read           | Safe projection read           | Safe projection read                 |
+| `public_catalogue`       | Safe projection/search         | Safe projection/search         | Safe projection/search               |
+| `public_categories`      | Active names and slugs         | Active names and slugs         | Active names and slugs               |
 | `campaign_settings`      | Read                           | Read                           | Read/write                           |
 | `profiles`               | None                           | Own read; validated update RPC | All rows; role bootstrap is trusted  |
 | Categories/products      | No raw access                  | No raw access                  | Read/write                           |
@@ -52,6 +53,12 @@ mutations still require functions:
 
 A product trigger prevents direct changes to `confirmed_stock` outside trusted
 database execution.
+
+Public catalogue search runs through `search_public_catalogue`. It caps each page
+at 20, validates input lengths, and returns only the reviewed public projection.
+Exact total, confirmed, reserved, and remaining inventory quantities never cross
+the public boundary. Availability is derived from database time, price versions,
+confirmed stock, and unexpired reservations.
 
 Permanent profile updates use `upsert_own_profile`, which derives the user ID from
 the JWT, rejects anonymous identities, normalizes the phone in PostgreSQL, and never
@@ -110,6 +117,8 @@ Executed against the local Supabase PostgreSQL stack:
 - Supabase database lint at warning level with no schema errors.
 - Browser-client Auth smoke test for anonymous isolation, account profile creation,
   direct-mutation denial, and validated profile updates.
+- Anonymous-client catalogue smoke test for safe categories, filtering, page-size
+  enforcement, exact-inventory isolation, and denial of raw-product reads.
 
 A sustained two-connection concurrency stress test remains part of Phase 10. The
 Phase 3 reservation suite already verifies final-unit exclusion through the secure

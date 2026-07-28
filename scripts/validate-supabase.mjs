@@ -23,8 +23,8 @@ function occurrences(source, pattern) {
 
 requireCondition(migrations.length >= 3, "Expected at least three ordered migrations.");
 requireCondition(
-  tests.length >= 5,
-  "Expected schema, security, business, reservation, and identity tests.",
+  tests.length >= 6,
+  "Expected schema, security, business, reservation, identity, and catalogue tests.",
 );
 
 const migrationSql = migrations
@@ -74,6 +74,7 @@ const requiredFunctions = [
   "handle_new_auth_user",
   "upsert_own_profile",
   "promote_admin_by_email",
+  "search_public_catalogue",
 ];
 
 for (const functionName of requiredFunctions) {
@@ -140,6 +141,20 @@ requireCondition(
     migrationSql,
   ),
   "Admin bootstrap must be restricted to the service role.",
+);
+requireCondition(
+  /create or replace view public\.public_categories/i.test(migrationSql),
+  "Safe public category projection is missing.",
+);
+requireCondition(
+  /p_page_size < 1 or p_page_size > 20/i.test(migrationSql),
+  "Public catalogue page size is not capped at 20.",
+);
+requireCondition(
+  /case filtered\.availability[\s\S]*when 'available' then 0[\s\S]*else 3/i.test(
+    migrationSql,
+  ),
+  "Public catalogue availability sorting is missing.",
 );
 
 for (const name of [...migrations, ...tests]) {

@@ -13,7 +13,7 @@ export function CartPrototype() {
   const [quantities, setQuantities] = useState([1, 2]);
   const items = [mockProducts[0]!, mockProducts[3]!] as const;
   const total = items.reduce(
-    (sum, product, index) => sum + product.priceBob * (quantities[index] ?? 0),
+    (sum, product, index) => sum + (product.priceBob ?? 0) * (quantities[index] ?? 0),
     0,
   );
 
@@ -39,7 +39,7 @@ export function CartPrototype() {
                 <p className="truncate text-sm font-bold text-accent">{product.brand}</p>
                 <h2 className="mt-1 font-bold">{product.name}</h2>
                 <p className="mt-1 text-sm text-muted">
-                  {formatBob(product.priceBob)} c/u
+                  {formatBob(product.priceBob ?? 0)} c/u
                 </p>
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <div className="flex h-10 items-center rounded-lg border border-border">
@@ -64,7 +64,7 @@ export function CartPrototype() {
                     </button>
                   </div>
                   <strong>
-                    {formatBob(product.priceBob * (quantities[index] ?? 0))}
+                    {formatBob((product.priceBob ?? 0) * (quantities[index] ?? 0))}
                   </strong>
                 </div>
               </div>

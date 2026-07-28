@@ -1,12 +1,11 @@
 import Link from "next/link";
 
 import { CustomerShell } from "@/components/layout/customer-shell";
-import { ProductCard } from "@/components/products/product-card";
+import { FeaturedCatalogue } from "@/components/products/featured-catalogue";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { mockProducts } from "@/lib/mock-data/products";
 
 export default function Home() {
   return (
@@ -63,10 +62,8 @@ export default function Home() {
           <Alert className="mt-5" title="Cada precio tiene vigencia limitada">
             Antes de confirmar, revisa la hora y el estado visibles en cada producto.
           </Alert>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {mockProducts.slice(0, 3).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+          <div className="mt-6">
+            <FeaturedCatalogue />
           </div>
         </section>
       </main>

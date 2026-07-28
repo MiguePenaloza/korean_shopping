@@ -46,7 +46,22 @@ Phase 4 connects only identity and access through the browser-safe Supabase clie
 - Client account state and UX gates for account and administrator screens.
 - Cloudflare Turnstile token support for anonymous sign-in.
 
-Catalogue and order data still use mocks until their approved phases.
+At the Phase 4 gate, catalogue and order data still used mocks.
+
+Phase 5 connects the customer catalogue to Supabase:
+
+- The home selection, search results, categories, and product detail load in
+  client components after the static page hydrates.
+- `search_public_catalogue` performs server-side filtering, authoritative
+  availability evaluation, stable ordering, counting, and pagination.
+- Pages contain at most 20 products.
+- Public projections omit exact inventory, costs, margins, and administrative
+  fields.
+- Product-image URLs come only from the public `product-images` bucket; the
+  interface keeps its accessible placeholder when no image exists.
+
+Administrator product screens and the cart continue using mock data until Phases
+6 and 7.
 
 ## Future data flow
 

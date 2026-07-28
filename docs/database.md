@@ -2,7 +2,7 @@
 
 ## Current result
 
-The Supabase schema is defined by four ordered migrations:
+The Supabase schema is defined by five ordered migrations:
 
 1. `20260727010000_initial_schema.sql` — types, tables, constraints, indexes, and
    RLS activation.
@@ -14,6 +14,8 @@ The Supabase schema is defined by four ordered migrations:
 4. `20260727013000_identity_and_access.sql` — permanent-profile creation,
    anonymous isolation, validated own-profile updates, and trusted administrator
    bootstrap.
+5. `20260727014000_public_catalogue.sql` — safe categories, live catalogue
+   projection, server-side search, state ordering, and pagination capped at 20.
 
 `supabase/seed.sql` contains development-only categories, rates, products, and
 price versions. It contains no real customer or payment data.
@@ -36,6 +38,14 @@ price versions. It contains no real customer or payment data.
 - `product_price_versions`: immutable pricing inputs and results.
 - `public_catalogue`: safe projection without exact inventory quantities, margins,
   costs, or administrative fields.
+- `public_categories`: active category names and slugs without administrative
+  mutation access.
+
+`search_public_catalogue` searches name, brand, or code, filters by safe category
+slug, counts the complete filtered result, and returns one page. PostgreSQL orders
+`available`, `reserved`, `sold_out`, then `expired`, with newest products first
+inside each state. The function rejects pages below 1, queries over 120 characters,
+and page sizes outside 1–20.
 
 Only one price version per product can be `active`. Old versions remain for order
 evidence. A trigger permits only `active → expired|superseded`; all price inputs
@@ -137,6 +147,8 @@ path, and creation time. No automatic evidence deletion is configured.
   and expiration.
 - Permanent signup profiles, anonymous isolation, profile privileges, and
   administrator bootstrap.
+- Public catalogue projection, filtering, availability ordering, inventory
+  privacy, and pagination.
 
 Local execution requires Docker and the Supabase CLI:
 
@@ -152,8 +164,8 @@ replace applying the migrations to PostgreSQL or executing pgTAP.
 Verified locally on 27 July 2026 with Docker Engine 29.6.2 and Supabase CLI
 2.110.0:
 
-- A clean `supabase db reset` applied all four migrations and the seed.
-- `supabase test db` passed 5 files and 74 assertions.
+- A clean `supabase db reset` applied all five migrations and the seed.
+- `supabase test db` passed 6 files and 89 assertions.
 - `supabase db lint --local --level warning` reported no schema errors.
 
 ## Migration discipline

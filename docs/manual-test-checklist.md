@@ -71,6 +71,27 @@ Local Supabase runtime:
 - [ ] Confirm customer/admin data isolation.
 - [ ] Close ordering without deleting history.
 
+## Phase 5
+
+Automated:
+
+- [x] Public catalogue and active categories are readable with the publishable key.
+- [x] Raw product inventory remains inaccessible to anonymous visitors.
+- [x] Search matches name, brand, and code on the database side.
+- [x] Category filtering and page-size cap of 20 are enforced in PostgreSQL.
+- [x] Available products sort before expired products.
+- [x] Six pgTAP files pass with 89 assertions.
+- [x] Database lint reports no schema errors.
+
+Manual review before Phase 6:
+
+- [ ] Search using the target Android phone and slow mobile data.
+- [ ] Confirm 20-product pagination with a larger realistic catalogue.
+- [ ] Review available, reserved, sold-out, and expired cards.
+- [ ] Open a valid product link and a removed/invalid product link.
+- [ ] Confirm a customer never sees exact unit quantities.
+- [ ] Review real thumbnail cropping once product images exist in Phase 6.
+
 ## Phase 4
 
 Automated:

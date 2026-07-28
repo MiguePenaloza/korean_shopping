@@ -1,5 +1,18 @@
 # User flows
 
+## Public catalogue
+
+1. The home page requests the first three safe catalogue results.
+2. `Buscar` loads active categories and one page of up to 20 products.
+3. The customer can search by name, brand, or code and filter by category.
+4. PostgreSQL returns available products first and expired products last.
+5. The detail route uses `/producto?id=...` and reloads the current public state.
+6. Reserved, sold-out, and expired products cannot be added.
+7. Exact quantities remain visible only in administrator interfaces.
+
+An expired product stays visible with `Precio vencido` and the message explaining
+that it awaits the official exchange-rate update.
+
 ## Guest order
 
 1. Browse products.

@@ -16,6 +16,27 @@ export function ProductVisual({
   product: Product;
   className?: string;
 }) {
+  if (product.thumbnailUrl) {
+    return (
+      <div
+        className={`relative aspect-[4/3] overflow-hidden bg-surface-soft ${className}`}
+      >
+        {/* Product thumbnails are pre-compressed to 480 px during upload. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={product.thumbnailUrl}
+          alt={product.thumbnailAlt ?? product.name}
+          className="h-full w-full object-cover"
+          loading="lazy"
+          decoding="async"
+        />
+        <span className="absolute right-3 bottom-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-muted">
+          {product.variant}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div
       role="img"

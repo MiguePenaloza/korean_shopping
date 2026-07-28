@@ -29,7 +29,7 @@ export default function AdminProductsPage() {
                 {product.name}
               </Link>
               <p className="text-sm text-muted">
-                {product.code} · {formatBob(product.priceBob)}
+                {product.code} · {formatBob(product.priceBob ?? 0)}
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <Badge

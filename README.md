@@ -5,9 +5,9 @@ durante un viaje de compras a Corea.
 
 ## Estado
 
-La Fase 4 conecta Supabase Auth para invitados, Google, correo/contraseña, perfiles,
-recuperación y control de acceso. El catálogo y los pedidos todavía usan datos
-simulados y se conectarán en sus fases posteriores.
+La Fase 5 conecta el catálogo público a Supabase: inicio, búsqueda, categorías,
+paginación, estados y detalle ya usan datos reales y seguros. La administración de
+productos, el carrito y los pedidos se conectarán en sus fases posteriores.
 
 Consulta [docs/implementation-status.md](docs/implementation-status.md) para conocer
 el avance y la siguiente fase autorizable.
@@ -64,6 +64,7 @@ npm run format:check
 npm run build
 npm run smoke:static
 npm run smoke:auth
+npm run smoke:catalogue
 npm run db:check
 ```
 
@@ -75,6 +76,8 @@ funciones, Storage, Cron y pruebas SQL.
 `npm run smoke:auth` requiere `BP_SUPABASE_URL` y
 `BP_SUPABASE_PUBLISHABLE_KEY`; crea identidades desechables en la base local y
 comprueba la separación entre invitado y cuenta.
+`npm run smoke:catalogue` usa las mismas variables para verificar lectura pública,
+búsqueda, límites de página y privacidad del inventario.
 
 ## Base de datos y administrador
 
@@ -104,10 +107,11 @@ catálogo ni los pedidos existentes.
 
 - Los productos, pedidos, clientes y tasas son datos simulados.
 - Los botones de WhatsApp solo previsualizan el mensaje y no abren la aplicación.
-- El ingreso, registro, recuperación, perfiles y sesión anónima ya usan Supabase.
+- El ingreso, registro, recuperación, perfiles, sesión anónima y catálogo público
+  ya usan Supabase.
 - El checkout prepara la identidad, pero todavía no crea una reserva o pedido real.
 - La carga de imágenes y las acciones administrativas todavía no persisten cambios.
-- El entorno Supabase local ya fue recreado desde cero y sus 74 pruebas pgTAP
+- El entorno Supabase local ya fue recreado desde cero y sus 89 pruebas pgTAP
   están aprobadas.
 
 ## Documentación

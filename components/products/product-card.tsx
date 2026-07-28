@@ -36,11 +36,17 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
           <Badge variant={state.variant}>{state.label}</Badge>
         </div>
-        <p className="mt-5 text-2xl font-bold">{formatBob(product.priceBob)}</p>
+        <p className="mt-5 text-2xl font-bold">
+          {product.priceBob === null
+            ? "Precio por actualizar"
+            : formatBob(product.priceBob)}
+        </p>
         <p className="mt-1 text-sm text-muted">
           {product.availability === "expired"
             ? "Esperando la actualización de la cotización oficial."
-            : `Válido hasta ${product.priceValidUntil}`}
+            : product.priceValidUntil
+              ? `Válido hasta ${product.priceValidUntil}`
+              : "Vigencia por confirmar"}
         </p>
         <ButtonLink
           className="mt-5 w-full"

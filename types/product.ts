@@ -8,9 +8,11 @@ export type Product = {
   category: string;
   description: string;
   variant: string;
-  priceBob: number;
-  priceValidUntil: string;
+  priceBob: number | null;
+  priceValidUntil: string | null;
   availability: ProductAvailability;
   color: "rose" | "mint" | "lilac" | "peach" | "sky" | "cream";
   visual: "tube" | "bottle" | "album" | "mask" | "lip" | "plush";
+  thumbnailUrl?: string;
+  thumbnailAlt?: string;
 };

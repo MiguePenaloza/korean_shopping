@@ -37,25 +37,28 @@ export function BulkPricing() {
             {mockProducts
               .filter((product) => product.availability !== "sold_out")
               .slice(0, 3)
-              .map((product, index) => (
-                <div
-                  key={product.id}
-                  className="grid grid-cols-[1fr_auto] gap-4 p-4 text-sm"
-                >
-                  <div>
-                    <strong>{product.name}</strong>
-                    <p className="text-muted">{product.code}</p>
+              .map((product, index) => {
+                const currentPrice = product.priceBob ?? 0;
+                return (
+                  <div
+                    key={product.id}
+                    className="grid grid-cols-[1fr_auto] gap-4 p-4 text-sm"
+                  >
+                    <div>
+                      <strong>{product.name}</strong>
+                      <p className="text-muted">{product.code}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-muted line-through">
+                        {formatBob(currentPrice)}
+                      </span>
+                      <strong className="ml-3">
+                        {formatBob(currentPrice + 3 + index * 2)}
+                      </strong>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-muted line-through">
-                      {formatBob(product.priceBob)}
-                    </span>
-                    <strong className="ml-3">
-                      {formatBob(product.priceBob + 3 + index * 2)}
-                    </strong>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
           </div>
           <div className="flex flex-col gap-3 bg-surface-soft p-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm font-bold">

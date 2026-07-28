@@ -18,7 +18,7 @@ Last updated: 27 July 2026 (`America/La_Paz`)
 |     2 | UI prototype           | completed | All automated checks passed     |
 |     3 | Supabase database      | completed | Structural validation passed    |
 |     4 | Identity and access    | completed | All automated checks passed     |
-|     5 | Public catalogue       | pending   | Requires explicit authorization |
+|     5 | Public catalogue       | completed | All automated checks passed     |
 |     6 | Administrator products | pending   | Requires explicit authorization |
 |     7 | Cart and orders        | pending   | Requires explicit authorization |
 |     8 | Order administration   | pending   | Requires explicit authorization |
@@ -94,7 +94,7 @@ Completed on 27 July 2026:
   `docs/manual-test-checklist.md`; these require human review.
 - The local Supabase stack is available through Docker. Production Supabase is not
   configured yet and remains part of Phase 11.
-- Catalogue persistence, real order creation, live Storage uploads, and WhatsApp
+- Product administration, real order creation, live Storage uploads, and WhatsApp
   behavior remain intentionally disconnected until their approved phases.
 - Google OAuth, production SMTP, production Turnstile, and the real administrator
   account require provider configuration in Phase 11. Local email links are
@@ -183,7 +183,51 @@ Completed on 27 July 2026:
   temporary server closed itself.
 - The local Supabase stack was stopped after validation with data preserved.
 
+## Phase 5 scope
+
+Completed on 27 July 2026:
+
+- Live customer home selection from the safe Supabase catalogue.
+- Database search by product name, brand, or code.
+- Active public categories and category filtering.
+- Database pagination capped at 20 products per page.
+- Authoritative availability ordering: available, reserved, sold out, then expired.
+- Live product detail through the static `/producto?id=...` route.
+- Clear loading, empty, unavailable, and invalid-link states in Spanish.
+- Product thumbnails from the public bucket with accessible placeholders.
+- Expired products visible, labelled, explained, and disabled.
+- Exact inventory quantities excluded from every public result.
+- Anonymous browser-client catalogue smoke test and dedicated pgTAP suite.
+
+Excluded until later:
+
+- Product creation, image uploads, price updates, and administrator catalogue
+  persistence (Phase 6).
+- Real cart mutation, inventory reservations, checkout, and WhatsApp actions
+  (Phase 7).
+- Production Supabase and Cloudflare deployment (Phase 11).
+
+## Phase 5 validation record
+
+Completed on 27 July 2026:
+
+- `npm run format:check`: passed with exit code 0.
+- `npm run lint -- --max-warnings=0`: passed with exit code 0.
+- `npm run typecheck`: passed with exit code 0.
+- `npm run test`: 4 frontend test files and 8 tests passed.
+- `npm run db:check`: 5 migrations, 14 RLS tables, 13 required secure functions,
+  and 6 pgTAP suites passed structural validation.
+- `supabase db reset --local`: all 5 migrations and seed applied cleanly.
+- `supabase test db`: 6 files and 89 assertions passed.
+- `supabase db lint --local --level warning`: no schema errors found.
+- `npm run smoke:catalogue`: public categories, filtering, inventory privacy, raw
+  product denial, and page-size enforcement passed through the browser SDK.
+- `npm run build`: 25 static pages generated across 24 application routes.
+- `npm run smoke:static`: 17 representative URLs returned HTTP 200 and the
+  temporary server closed itself.
+- The local Supabase stack was stopped after validation with data preserved.
+
 ## Next phase
 
-Phase 5 — Public catalogue. It requires explicit user authorization and must not
+Phase 6 — Administrator products. It requires explicit user authorization and must not
 begin automatically.
