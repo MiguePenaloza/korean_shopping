@@ -188,3 +188,29 @@ Manual review before Phase 9:
 - [ ] Accept an expired payment exceptionally and review the recorded reason.
 - [ ] Confirm a customer account cannot open any administrator order or evidence.
 - [ ] Review the detail at 320 px and complete every action using only the keyboard.
+
+## Phase 9
+
+Automated:
+
+- [x] Customer history requires a permanent, non-anonymous account.
+- [x] Orders are selected by permanent `customer_id`, never by phone matching.
+- [x] Another account cannot read the list or detail.
+- [x] Guest checkout identities cannot use web history, including their own order.
+- [x] Raw order, item, and status-history tables are closed to browser identities.
+- [x] Customer detail omits administrative reasons, metadata, actor IDs, and evidence.
+- [x] History pagination is limited to 20 orders per page.
+- [x] Administrator fulfillment follows the exact paid order progression.
+- [x] Ten pgTAP files pass with 196 assertions.
+
+Manual review before Phase 10:
+
+- [ ] Place an order while signed in and confirm it appears in `Mis pedidos`.
+- [ ] Place an order as guest with the same phone and confirm it never appears.
+- [ ] Open another account with the same phone and confirm its history is empty.
+- [ ] Review payment, product, purchase, transit, delivery, refund, and expired copy.
+- [ ] Advance a paid order through all four fulfillment actions as administrator.
+- [ ] Confirm every update appears chronologically in the customer timeline.
+- [ ] Open the contextual WhatsApp help message from a physical phone.
+- [ ] Sign out from a detail URL, sign in again, and confirm the full URL is restored.
+- [ ] Review list, detail, pagination, and timeline at 320 px and by keyboard.

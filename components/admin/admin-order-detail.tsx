@@ -10,6 +10,7 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
+  advanceAdminOrderFulfillment,
   attachAdminPaymentEvidence,
   changeAdminOrderState,
   getAdminOrderDetail,
@@ -18,6 +19,7 @@ import {
   paymentStatusLabels,
   type AdminOrderAction,
   type AdminOrderDetail as AdminOrderDetailValue,
+  type AdminFulfillmentStatus,
 } from "@/lib/admin/orders";
 import { formatBob } from "@/lib/money/format";
 
@@ -65,6 +67,8 @@ function actionError(error: unknown) {
       "Este pedido ya no se puede cancelar como pedido sin pago.",
     REFUND_NOT_ALLOWED: "El pedido no puede iniciar un reembolso desde este estado.",
     REFUND_COMPLETION_NOT_ALLOWED: "Primero registra el pedido como reembolso pendiente.",
+    FULFILLMENT_TRANSITION_NOT_ALLOWED:
+      "El pedido cambió de estado o todavía no tiene el pago confirmado.",
     INVALID_EVIDENCE_FILE: "El comprobante no tiene un formato o tamaño permitido.",
     EVIDENCE_UPLOAD_FAILED: "No pudimos subir el comprobante privado.",
   };
@@ -151,6 +155,45 @@ export function AdminOrderDetail() {
     };
   }, [order]);
 
+  const nextFulfillment = useMemo<{
+    status: AdminFulfillmentStatus;
+    label: string;
+    confirmation: string;
+  } | null>(() => {
+    if (!order || order.paymentStatus !== "paid") return null;
+    if (order.status === "confirmed") {
+      return {
+        status: "purchased",
+        label: "Marcar como comprado en Corea",
+        confirmation:
+          "¿Confirmas que todos los productos de este pedido ya fueron comprados?",
+      };
+    }
+    if (order.status === "purchased") {
+      return {
+        status: "in_transit",
+        label: "Marcar en camino a Bolivia",
+        confirmation: "¿Confirmas que este pedido ya está viajando hacia Bolivia?",
+      };
+    }
+    if (order.status === "in_transit") {
+      return {
+        status: "ready_for_delivery",
+        label: "Marcar listo para entregar",
+        confirmation:
+          "¿Confirmas que este pedido ya está listo para coordinar la entrega?",
+      };
+    }
+    if (order.status === "ready_for_delivery") {
+      return {
+        status: "delivered",
+        label: "Marcar como entregado",
+        confirmation: "¿Confirmas que el pedido fue entregado al cliente?",
+      };
+    }
+    return null;
+  }, [order]);
+
   async function runAction(
     action: AdminOrderAction,
     confirmation: string,
@@ -163,6 +206,26 @@ export function AdminOrderDetail() {
       await changeAdminOrderState(order.id, action, reason);
       setReason("");
       setNotice({ kind: "success", text: success });
+      await load();
+    } catch (error) {
+      setNotice({ kind: "error", text: actionError(error) });
+    } finally {
+      setWorking("");
+    }
+  }
+
+  async function advanceFulfillment() {
+    if (!order || !nextFulfillment || !window.confirm(nextFulfillment.confirmation)) {
+      return;
+    }
+    setWorking(nextFulfillment.status);
+    setNotice(null);
+    try {
+      await advanceAdminOrderFulfillment(order.id, nextFulfillment.status);
+      setNotice({
+        kind: "success",
+        text: "El estado de seguimiento del cliente fue actualizado.",
+      });
       await load();
     } catch (error) {
       setNotice({ kind: "error", text: actionError(error) });
@@ -517,7 +580,18 @@ export function AdminOrderDetail() {
                 </Button>
               ) : null}
 
-              {!Object.values(permissions).some(Boolean) ? (
+              {nextFulfillment ? (
+                <Button
+                  disabled={Boolean(working)}
+                  onClick={() => void advanceFulfillment()}
+                >
+                  {working === nextFulfillment.status
+                    ? "Actualizando…"
+                    : nextFulfillment.label}
+                </Button>
+              ) : null}
+
+              {!Object.values(permissions).some(Boolean) && !nextFulfillment ? (
                 <p className="rounded-xl bg-surface-soft p-4 text-sm text-muted">
                   No hay acciones disponibles para este estado.
                 </p>

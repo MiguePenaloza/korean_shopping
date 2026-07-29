@@ -96,6 +96,9 @@ export type AdminOrderDetail = AdminOrderSummary & {
 export type AdminOrderAction =
   "payment_reported" | "reject_payment" | "cancel" | "refund_pending" | "refunded";
 
+export type AdminFulfillmentStatus =
+  "purchased" | "in_transit" | "ready_for_delivery" | "delivered";
+
 export type EvidenceUpload = {
   storagePath: string;
   originalFilename: string;
@@ -203,6 +206,8 @@ function adminError(error: { message?: string } | null) {
     "ORDER_CANCELLATION_NOT_ALLOWED",
     "REFUND_NOT_ALLOWED",
     "REFUND_COMPLETION_NOT_ALLOWED",
+    "INVALID_FULFILLMENT_STATUS",
+    "FULFILLMENT_TRANSITION_NOT_ALLOWED",
     "INVALID_EVIDENCE_PATH",
     "INVALID_EVIDENCE_FILE",
     "EVIDENCE_OBJECT_NOT_FOUND",
@@ -311,6 +316,17 @@ export async function changeAdminOrderState(
     p_order_id: orderId,
     p_action: action,
     p_reason: reason?.trim() || null,
+  });
+  if (error) throw adminError(error);
+}
+
+export async function advanceAdminOrderFulfillment(
+  orderId: string,
+  nextStatus: AdminFulfillmentStatus,
+) {
+  const { error } = await client().rpc("admin_advance_order_fulfillment", {
+    p_order_id: orderId,
+    p_next_status: nextStatus,
   });
   if (error) throw adminError(error);
 }

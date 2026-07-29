@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Detalle del pedido" };
 
 export default function CustomerOrderDetailPage() {
   return (
-    <CustomerShell>
+    <CustomerShell active="/mis-pedidos">
       <main className="page-container">
         <Suspense fallback={<p>Cargando pedido…</p>}>
           <CustomerOrderDetail />

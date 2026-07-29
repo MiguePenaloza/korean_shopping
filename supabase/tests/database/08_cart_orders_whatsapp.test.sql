@@ -126,6 +126,10 @@ values
     clock_timestamp()
   );
 
+-- Phase 9 revokes raw order reads. This transaction-only grant keeps the older
+-- checkout assertions able to inspect database effects after testing privileges.
+grant select on public.orders to authenticated;
+
 set local role authenticated;
 select set_config(
   'request.jwt.claims',

@@ -103,6 +103,10 @@ update public.profiles
 set role = 'admin'
 where id = 'e0000000-0000-4000-8000-000000000001';
 
+-- Phase 9 revokes raw order reads. This transaction-only grant keeps these
+-- administrator workflow assertions able to inspect authoritative row effects.
+grant select on public.orders, public.order_status_history to authenticated;
+
 set local role authenticated;
 select set_config(
   'request.jwt.claims',

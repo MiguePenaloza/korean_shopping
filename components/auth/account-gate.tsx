@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import { useAuth } from "@/components/auth/auth-provider";
 import { ButtonLink } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 export function AccountGate({ children }: { children: React.ReactNode }) {
   const { configured, isAnonymous, loading, user } = useAuth();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   if (loading) {
     return (
@@ -19,7 +20,8 @@ export function AccountGate({ children }: { children: React.ReactNode }) {
   }
 
   if (!configured || !user || isAnonymous) {
-    const next = encodeURIComponent(pathname);
+    const query = searchParams.toString();
+    const next = encodeURIComponent(query ? `${pathname}?${query}` : pathname);
     return (
       <main className="page-container">
         <Card className="mx-auto max-w-lg p-6 text-center sm:p-8">

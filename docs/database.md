@@ -2,7 +2,7 @@
 
 ## Current result
 
-The Supabase schema is defined by eight ordered migrations:
+The Supabase schema is defined by nine ordered migrations:
 
 1. `20260727010000_initial_schema.sql` — types, tables, constraints, indexes, and
    RLS activation.
@@ -25,6 +25,9 @@ The Supabase schema is defined by eight ordered migrations:
 8. `20260728030000_order_administration.sql` — administrator order projections,
    controlled state transitions, audited reasons, safe paid confirmation, inventory
    reversal for refunds, and private evidence registration.
+9. `20260728040000_customer_tracking.sql` — permanent-account guard, paginated own
+   history, customer-safe detail and timeline, raw-order read revocation, and
+   ordered administrator fulfillment updates.
 
 `supabase/seed.sql` contains development-only categories, rates, products, and
 price versions. It contains no real customer or payment data.
@@ -144,6 +147,17 @@ Reasons are required for destructive or financial actions and are copied into
 `order_status_history`. Starting a refund releases active inventory or reverses
 previously converted inventory exactly once.
 
+`list_own_account_orders` and `get_own_account_order_detail` require a
+non-anonymous JWT with a permanent profile. They filter strictly by `customer_id`,
+never by phone or only by `actor_id`. The detail uses the public order number and
+omits internal audit reasons, metadata, actor IDs, evidence, and administrative
+notes.
+
+`admin_advance_order_fulfillment` requires a paid order and locks it before
+enforcing the exact progression from confirmed through purchased, transit,
+ready-for-delivery, and delivered. Each transition enters the customer-safe
+timeline through the existing audit trigger.
+
 ## Expiration
 
 `expire_due_records`:
@@ -188,6 +202,9 @@ evidence deletion is configured.
 - Administrator list/detail isolation, safe transitions, rejection and cancellation
   release, refund completion, late-payment override, evidence-path validation, and
   auditable reasons.
+- Permanent-account-only history, public-number detail, pagination, guest and
+  cross-account denial, no phone reclaim, reduced timeline fields, and fulfillment
+  progression.
 
 Local execution requires Docker and the Supabase CLI:
 
@@ -202,8 +219,8 @@ replace applying the migrations to PostgreSQL or executing pgTAP.
 
 Verified locally on 28 July 2026 with Docker and Supabase CLI:
 
-- A clean `supabase db reset` applied all eight migrations and the seed.
-- `supabase test db` passed 9 files and 170 assertions.
+- A clean `supabase db reset` applied all nine migrations and the seed.
+- `supabase test db` passed 10 files and 196 assertions.
 - `supabase db lint --local --schema public --level warning --fail-on warning`
   reported no schema warnings or errors.
 

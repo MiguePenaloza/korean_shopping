@@ -23,8 +23,8 @@ function occurrences(source, pattern) {
 
 requireCondition(migrations.length >= 3, "Expected at least three ordered migrations.");
 requireCondition(
-  tests.length >= 9,
-  "Expected schema, security, business, reservation, identity, catalogue, product, checkout, and order-administration tests.",
+  tests.length >= 10,
+  "Expected schema, security, business, reservation, identity, catalogue, product, checkout, administration, and customer-tracking tests.",
 );
 
 const migrationSql = migrations
@@ -90,6 +90,10 @@ const requiredFunctions = [
   "admin_change_order_state",
   "admin_attach_payment_evidence",
   "admin_mark_order_paid",
+  "require_permanent_account",
+  "list_own_account_orders",
+  "get_own_account_order_detail",
+  "admin_advance_order_fulfillment",
 ];
 
 for (const functionName of requiredFunctions) {
@@ -222,6 +226,26 @@ requireCondition(
 requireCondition(
   /p_order_id::text[\s\S]{0,120}\(jpg\|jpeg\|png\|webp\)/i.test(migrationSql),
   "Private evidence paths are not bound to their order directory.",
+);
+requireCondition(
+  /revoke select on public\.orders, public\.order_items, public\.order_status_history[\s\S]{0,80}from authenticated/i.test(
+    migrationSql,
+  ),
+  "Raw order history remains readable by browser identities.",
+);
+requireCondition(
+  /customer_order\.customer_id = v_customer_id/i.test(migrationSql),
+  "Customer tracking is not bound to the permanent account identifier.",
+);
+requireCondition(
+  /coalesce\(\(auth\.jwt\(\) ->> 'is_anonymous'\)::boolean, false\)/i.test(migrationSql),
+  "Customer tracking does not reject anonymous checkout identities.",
+);
+requireCondition(
+  /when 'purchased' then 'confirmed'[\s\S]{0,240}when 'delivered' then 'ready_for_delivery'/i.test(
+    migrationSql,
+  ),
+  "Administrator fulfillment does not enforce the ordered customer journey.",
 );
 
 for (const name of [...migrations, ...tests]) {

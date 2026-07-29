@@ -34,6 +34,21 @@ preserved, and the resulting order appears in `Mis pedidos`.
 
 Guest orders are not attached to a later account based only on matching phone numbers.
 
+## Customer tracking
+
+1. A customer with Google or email/password opens `Mis pedidos`.
+2. PostgreSQL returns only orders whose `customer_id` is that permanent account.
+3. The list shows public order number, date, units, total, and current state.
+4. Detail shows immutable products, payment state, order state, Bolivia dates, and
+   the customer-safe timeline.
+5. Contextual help explains the next step and can open WhatsApp with the order
+   number.
+6. Administrator updates move a paid order through purchase, transit, readiness,
+   and delivery in that exact order.
+
+An invited checkout identity cannot use these endpoints even for its own guest
+order. Another account with the same phone also receives no orders.
+
 ## Identity and account
 
 ### Guest

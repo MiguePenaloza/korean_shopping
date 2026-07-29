@@ -12,23 +12,23 @@ only to the roles that need each RPC.
 
 ## RLS matrix
 
-| Resource                 | Anonymous/public               | Customer identity              | Administrator                        |
-| ------------------------ | ------------------------------ | ------------------------------ | ------------------------------------ |
-| `public_catalogue`       | Safe projection/search         | Safe projection/search         | Safe projection/search               |
-| `public_categories`      | Active names and slugs         | Active names and slugs         | Active names and slugs               |
-| `campaign_settings`      | No raw access                  | No raw access                  | Secure RPC only                      |
-| `profiles`               | None                           | Own read; validated update RPC | All rows; role bootstrap is trusted  |
-| Categories/products      | No raw access                  | No raw access                  | Secure RPC                           |
-| Rates and observations   | None                           | None                           | Secure RPC                           |
-| Price versions           | No raw access                  | No raw access                  | Read; writes through secure RPC      |
-| Orders                   | None without anonymous sign-in | Own read                       | Read; transitions through secure RPC |
-| Order items              | None                           | Own read, immutable            | Read, immutable                      |
-| Reservations             | None                           | None                           | Read; writes through secure RPC      |
-| Status history           | None                           | Own read                       | Read                                 |
-| Admin overrides          | None                           | None                           | Read; writes through secure RPC      |
-| Evidence metadata        | None                           | None                           | Secure RPC and private read          |
-| Product-image objects    | Public read                    | Public read                    | Write                                |
-| Payment-evidence objects | None                           | None                           | Read/write                           |
+| Resource                 | Anonymous/public       | Customer identity              | Administrator                       |
+| ------------------------ | ---------------------- | ------------------------------ | ----------------------------------- |
+| `public_catalogue`       | Safe projection/search | Safe projection/search         | Safe projection/search              |
+| `public_categories`      | Active names and slugs | Active names and slugs         | Active names and slugs              |
+| `campaign_settings`      | No raw access          | No raw access                  | Secure RPC only                     |
+| `profiles`               | None                   | Own read; validated update RPC | All rows; role bootstrap is trusted |
+| Categories/products      | No raw access          | No raw access                  | Secure RPC                          |
+| Rates and observations   | None                   | None                           | Secure RPC                          |
+| Price versions           | No raw access          | No raw access                  | Read; writes through secure RPC     |
+| Orders                   | Confirmation RPC only  | Safe own tracking RPC          | Secure list/detail RPC              |
+| Order items              | Confirmation RPC only  | Safe own tracking RPC          | Secure detail RPC                   |
+| Reservations             | None                   | None                           | Read; writes through secure RPC     |
+| Status history           | None                   | Reduced own timeline RPC       | Secure detail RPC                   |
+| Admin overrides          | None                   | None                           | Read; writes through secure RPC     |
+| Evidence metadata        | None                   | None                           | Secure RPC and private read         |
+| Product-image objects    | Public read            | Public read                    | Write                               |
+| Payment-evidence objects | None                   | None                           | Read/write                          |
 
 An anonymous checkout still requires Supabase anonymous sign-in and therefore uses
 the `authenticated` database role with an anonymous JWT. The plain `anon` role
@@ -40,6 +40,10 @@ open account history, and are never matched to later accounts by phone.
 Customers do not receive `INSERT`, `UPDATE`, or `DELETE` privileges on orders,
 items, reservations, price versions, history, or overrides. RLS is an additional
 barrier, not the only barrier.
+
+Phase 9 also revokes direct `SELECT` on orders, order items, and status history from
+browser identities. Customers receive only purpose-built projections; this avoids
+exposing actor IDs, administrative notes, internal reasons, or audit metadata.
 
 Administrative catalogue maintenance uses RLS backed by `is_admin()`. Sensitive
 mutations still require functions:
@@ -89,6 +93,9 @@ service-role key must never be copied into this static application.
 | Customer marks own order paid       | No direct update grant; report RPC can set only `payment_reported`    |
 | Expired browser clock               | `clock_timestamp()` controls prices and reservations                  |
 | Claiming guest orders by phone      | Ownership uses JWT actor/customer ID, never phone matching            |
+| Guest opens account history         | Permanent-profile guard rejects anonymous JWTs                        |
+| Account reads another order         | Tracking filters by `customer_id` and public order number             |
+| Customer reads internal audit notes | Raw reads revoked; reduced timeline omits reasons and metadata        |
 | Reading exact stock                 | Public view returns a state label, not inventory counts               |
 | Reading payment evidence            | Private bucket and admin-only Storage/table policies                  |
 | Forging evidence metadata           | Direct inserts revoked; RPC validates object, type, size, and path    |
@@ -126,7 +133,7 @@ Implemented:
 Executed against the local Supabase PostgreSQL stack:
 
 - Clean database reset with all migrations and seed.
-- Nine pgTAP files with 170 successful assertions.
+- Ten pgTAP files with 196 successful assertions.
 - Supabase database lint at warning level with no schema errors.
 - Browser-client Auth smoke test for anonymous isolation, account profile creation,
   direct-mutation denial, and validated profile updates.
@@ -136,6 +143,8 @@ Executed against the local Supabase PostgreSQL stack:
   idempotency, ownership isolation, and payment reporting.
 - Administrator-order smoke test for list/detail isolation, paid confirmation,
   private evidence, signed access, inventory conversion, and refund audit reasons.
+- Customer-tracking smoke test for permanent ownership, phone non-claim, guest and
+  cross-account denial, raw-table denial, safe timelines, and fulfillment updates.
 
 A sustained two-connection concurrency stress test remains part of Phase 10. The
 Phase 3 reservation suite already verifies final-unit exclusion through the secure

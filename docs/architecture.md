@@ -29,8 +29,8 @@ Runtime entities will use static routes plus query parameters, for example
 
 The Supabase backend contains:
 
-- Eight ordered SQL migrations.
-- Nine pgTAP suites and development seed data.
+- Nine ordered SQL migrations.
+- Ten pgTAP suites and development seed data.
 - Public catalogue projection with no exact stock or cost fields.
 - Secure RPC boundaries for prices, checkout, payment reporting, and payment
   confirmation.
@@ -99,6 +99,19 @@ Phase 8 connects administrator order operations:
   path to its order, records uploader and file metadata, and never deletes it
   automatically.
 
+Phase 9 connects permanent-account tracking:
+
+- `Mis pedidos` uses a customer-safe RPC capped at 20 orders per page.
+- Order detail accepts the public order number and returns only payment/order
+  states, immutable purchased items, deadlines, the help contact, and a reduced
+  timeline.
+- Both RPCs require a permanent profile and bind ownership to `customer_id`; phone
+  matching and anonymous JWTs are never accepted.
+- Raw orders, item snapshots, and audit history are no longer directly readable by
+  browser identities.
+- Administrators can advance only the ordered paid journey:
+  `confirmed → purchased → in_transit → ready_for_delivery → delivered`.
+
 ## Order data flow
 
 1. The browser reads a safe public product projection.
@@ -110,6 +123,8 @@ Phase 8 connects administrator order operations:
 7. The browser opens `wa.me` only after the payment-report mutation succeeds.
 8. Administrator changes cross dedicated state-transition RPCs; the browser cannot
    update order or evidence metadata directly.
+9. Customer tracking crosses permanent-account projections that omit internal
+   reasons, actor identifiers, evidence, and administrative notes.
 
 ## Trust boundaries
 
@@ -135,6 +150,8 @@ functions are authoritative.
   confirmation ownership, deadlines, and payment reporting.
 - `scripts/admin-orders-smoke.mjs` verifies the administrator order boundary,
   private evidence, confirmed inventory, and refund audit history.
+- `scripts/customer-tracking-smoke.mjs` verifies permanent-account ownership,
+  guest exclusion, raw-table denial, safe timelines, and fulfillment updates.
 
 ## Static authentication flow
 

@@ -11,6 +11,7 @@
     "smoke:admin-products": "node scripts/admin-products-smoke.mjs",
     "smoke:orders": "node scripts/orders-smoke.mjs",
     "smoke:admin-orders": "node scripts/admin-orders-smoke.mjs",
+    "smoke:tracking": "node scripts/customer-tracking-smoke.mjs",
     "db:check": "node scripts/validate-supabase.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",

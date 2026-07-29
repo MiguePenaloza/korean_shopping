@@ -22,7 +22,7 @@ Last updated: 28 July 2026 (`America/La_Paz`)
 |     6 | Administrator products | completed | All automated checks passed     |
 |     7 | Cart and orders        | completed | All automated checks passed     |
 |     8 | Order administration   | completed | All automated checks passed     |
-|     9 | Customer tracking      | pending   | Requires explicit authorization |
+|     9 | Customer tracking      | completed | All automated checks passed     |
 |    10 | Hardening              | pending   | Requires explicit authorization |
 |    11 | Deployment             | pending   | Requires explicit authorization |
 |    12 | Launch                 | pending   | Requires explicit authorization |
@@ -94,7 +94,6 @@ Completed on 27 July 2026:
   `docs/manual-test-checklist.md`; these require human review.
 - The local Supabase stack is available through Docker. Production Supabase is not
   configured yet and remains part of Phase 11.
-- Permanent-account order history and customer timeline remain for Phase 9.
 - Google OAuth, production SMTP, production Turnstile, and the real administrator
   account require provider configuration in Phase 11. Local email links are
   inspectable through Mailpit.
@@ -382,7 +381,57 @@ Completed on 28 July 2026:
 - The local database was reset after the smoke test and Supabase was stopped with
   clean seed data preserved.
 
+## Phase 9 scope
+
+Completed on 28 July 2026:
+
+- Real `Mis pedidos` history for permanent Google or email accounts, paginated at
+  20 orders and isolated strictly by the authenticated account identifier.
+- Customer-safe order detail using the public order number, immutable item
+  snapshots, payment and fulfillment status, Bolivia timestamps, contextual help,
+  and a reduced chronological timeline.
+- Explicit rejection of anonymous sessions and no recovery or association of guest
+  orders by matching a telephone number.
+- Revocation of direct browser reads from orders, order items, and status history;
+  customer access is limited to dedicated security-definer RPC functions.
+- Administrator fulfillment progression from confirmed through purchased, in
+  transit, ready for delivery, and delivered, reflected in the customer timeline.
+- Spanish loading, empty, invalid-link, unavailable, and access-denied states.
+- Account-gate redirects that preserve the requested order-detail query string.
+- Browser-client tracking smoke test and dedicated pgTAP coverage.
+
+Excluded until later:
+
+- Extended security, accessibility, performance, dependency, and concurrency
+  review (Phase 10).
+- Production Supabase, OAuth, SMTP, Turnstile, and hosting configuration
+  (Phase 11).
+- Physical-device launch validation (Phase 12).
+
+## Phase 9 validation record
+
+Completed on 28 July 2026:
+
+- `npm run format:check`: passed with exit code 0.
+- `npm run lint -- --max-warnings=0`: passed with exit code 0.
+- `npm run typecheck`: passed with exit code 0.
+- `npm run test`: 9 frontend test files and 24 tests passed.
+- `npm run db:check`: 9 migrations, 14 RLS tables, 32 secure functions, and
+  10 pgTAP suites passed structural validation.
+- `supabase db reset --local`: all 9 migrations and the seed applied cleanly.
+- `supabase test db`: 10 files and 196 assertions passed.
+- `supabase db lint --local --schema public --level warning --fail-on warning`:
+  no schema warnings or errors found.
+- `npm run smoke:tracking`: account ownership, phone non-claim, guest and
+  cross-account denial, raw-table isolation, safe timeline, and administrator
+  fulfillment propagation passed through the Supabase SDK.
+- `npm run build`: 25 static pages generated across 24 application routes.
+- `npm run smoke:static`: 18 representative URLs returned HTTP 200 and the
+  temporary server closed itself.
+- The local database was reset after the smoke test and Supabase was stopped with
+  clean seed data preserved.
+
 ## Next phase
 
-Phase 9 — Customer tracking. It requires explicit user authorization and must not
-begin automatically.
+Phase 10 — Hardening. It requires explicit user authorization and must not begin
+automatically.

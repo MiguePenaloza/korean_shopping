@@ -18,9 +18,10 @@ const routes = [
   "/mi-cuenta/",
   "/pedido-confirmado/",
   "/mis-pedidos/",
+  "/mis-pedidos/detalle/?numero=BP-2607-001000",
   "/admin/",
   "/admin/productos/nuevo/",
-  "/admin/pedidos/detalle/?id=order-003",
+  "/admin/pedidos/detalle/?id=40000000-0000-4000-8000-000000000001",
   "/admin/configuracion/",
 ];
 

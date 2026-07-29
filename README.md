@@ -5,9 +5,9 @@ durante un viaje de compras a Corea.
 
 ## Estado
 
-La Fase 8 conecta la administración de pedidos, pagos, reembolsos y comprobantes
-privados a Supabase. Cada cambio de estado se valida en PostgreSQL, conserva su
-motivo en el historial y ajusta el inventario de forma transaccional.
+La Fase 9 conecta `Mis pedidos` a Supabase para cuentas permanentes. Cada cliente
+ve únicamente los pedidos creados con su cuenta, sus productos, pago y línea de
+tiempo; los invitados continúan por WhatsApp sin historial web.
 
 Consulta [docs/implementation-status.md](docs/implementation-status.md) para conocer
 el avance y la siguiente fase autorizable.
@@ -68,6 +68,7 @@ npm run smoke:catalogue
 npm run smoke:admin-products
 npm run smoke:orders
 npm run smoke:admin-orders
+npm run smoke:tracking
 npm run db:check
 ```
 
@@ -89,6 +90,9 @@ invitado, idempotencia, propiedad del pedido y el aviso de pago.
 `npm run smoke:admin-orders` requiere además `BP_SUPABASE_SECRET_KEY` solamente
 para crear un administrador desechable; todas las operaciones bajo prueba usan su
 sesión normal y verifican pagos, reembolsos y comprobantes privados.
+`npm run smoke:tracking` usa las mismas variables locales para comprobar aislamiento
+entre cuentas, exclusión de invitados, cierre de tablas crudas y actualizaciones de
+seguimiento.
 
 ## Base de datos y administrador
 
@@ -116,8 +120,9 @@ catálogo ni los pedidos existentes.
 
 ## Limitaciones actuales
 
-- La administración de pedidos ya usa datos reales. El historial web del cliente
-  permanece para la Fase 9.
+- La administración y el historial de clientes con cuenta ya usan datos reales.
+- Los pedidos de invitados no se vinculan posteriormente por coincidencia de
+  teléfono.
 - Los botones de la confirmación real ya abren WhatsApp con mensajes
   predeterminados.
 - El ingreso, registro, recuperación, perfiles, sesión anónima y catálogo público
@@ -126,7 +131,7 @@ catálogo ni los pedidos existentes.
   amplía la reserva hasta el minuto 25.
 - La carga de imágenes de producto y las acciones administrativas ya persisten
   mediante Storage y RPC seguras.
-- El entorno Supabase local fue recreado desde cero y sus 170 comprobaciones pgTAP
+- El entorno Supabase local fue recreado desde cero y sus 196 comprobaciones pgTAP
   están aprobadas.
 
 ## Documentación
