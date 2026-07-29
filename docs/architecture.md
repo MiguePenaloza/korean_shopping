@@ -29,8 +29,8 @@ Runtime entities will use static routes plus query parameters, for example
 
 The Supabase backend contains:
 
-- Seven ordered SQL migrations.
-- Eight pgTAP suites and development seed data.
+- Eight ordered SQL migrations.
+- Nine pgTAP suites and development seed data.
 - Public catalogue projection with no exact stock or cost fields.
 - Secure RPC boundaries for prices, checkout, payment reporting, and payment
   confirmation.
@@ -86,6 +86,19 @@ Phase 7 connects cart and ordering:
 - Payment reporting extends an active reservation to minute 25 and opens WhatsApp;
   it cannot set `paid`.
 
+Phase 8 connects administrator order operations:
+
+- Administrator list and detail RPCs expose customer contact, immutable items,
+  deadlines, private evidence metadata, audit history, and late-payment overrides.
+- Controlled transitions register payment notices, rejections, cancellations,
+  pending refunds, and completed refunds with required reasons.
+- Paid confirmation converts reserved inventory atomically. A refund reverses
+  converted inventory once before releasing the reservation.
+- Expired paid orders require an explicit reason and a fresh locked inventory check.
+- Evidence uploads go to a separate private bucket. The database binds each object
+  path to its order, records uploader and file metadata, and never deletes it
+  automatically.
+
 ## Order data flow
 
 1. The browser reads a safe public product projection.
@@ -95,6 +108,8 @@ Phase 7 connects cart and ordering:
 5. RLS limits every direct read.
 6. Storage RLS separates public product media from private payment evidence.
 7. The browser opens `wa.me` only after the payment-report mutation succeeds.
+8. Administrator changes cross dedicated state-transition RPCs; the browser cannot
+   update order or evidence metadata directly.
 
 ## Trust boundaries
 
@@ -118,6 +133,8 @@ functions are authoritative.
   catalogue, and bulk-pricing boundaries in the local stack.
 - `scripts/orders-smoke.mjs` verifies signed guest checkout, idempotency,
   confirmation ownership, deadlines, and payment reporting.
+- `scripts/admin-orders-smoke.mjs` verifies the administrator order boundary,
+  private evidence, confirmed inventory, and refund audit history.
 
 ## Static authentication flow
 

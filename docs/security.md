@@ -26,7 +26,7 @@ only to the roles that need each RPC.
 | Reservations             | None                           | None                           | Read; writes through secure RPC      |
 | Status history           | None                           | Own read                       | Read                                 |
 | Admin overrides          | None                           | None                           | Read; writes through secure RPC      |
-| Evidence metadata        | None                           | None                           | Read/write with uploader check       |
+| Evidence metadata        | None                           | None                           | Secure RPC and private read          |
 | Product-image objects    | Public read                    | Public read                    | Write                                |
 | Payment-evidence objects | None                           | None                           | Read/write                           |
 
@@ -49,6 +49,9 @@ mutations still require functions:
 - Payment reporting is owner-bound and time-bound.
 - Paid confirmation converts reservations and confirmed inventory atomically.
 - Late-payment acceptance records an immutable reason.
+- Rejection and cancellation release reservations through an allowed transition.
+- Refund initiation reverses converted inventory once and records its reason.
+- Evidence metadata requires an existing private object in the order directory.
 - Cron expiration cannot be called by browser roles.
 
 The browser-facing `submit_order` requires purchase-condition and privacy
@@ -88,8 +91,11 @@ service-role key must never be copied into this static application.
 | Claiming guest orders by phone      | Ownership uses JWT actor/customer ID, never phone matching            |
 | Reading exact stock                 | Public view returns a state label, not inventory counts               |
 | Reading payment evidence            | Private bucket and admin-only Storage/table policies                  |
+| Forging evidence metadata           | Direct inserts revoked; RPC validates object, type, size, and path    |
 | Replacing historical price          | Immutable price-version and order-item triggers                       |
 | Admin accepts late payment silently | Required reason and `order_admin_overrides` audit row                 |
+| Invalid order-state jump            | One locked RPC validates each allowed transition and required reason  |
+| Refund leaves inventory confirmed   | Converted reservations are reversed once when refund starts           |
 | Forged admin role                   | Role stored in protected profile row; browser input cannot change it  |
 | Anonymous user opens history        | No profile row, account gate, owner RLS, and no phone-based reclaim   |
 | Open redirect after OAuth           | Callback accepts only same-site relative paths                        |
@@ -114,13 +120,13 @@ Implemented:
 - Four administrator-only policies for the private evidence bucket.
 - Structural validation for fixed search paths, grants, policies, locks,
   idempotency, Cron, and immutability.
-- pgTAP tests for schema, privilege matrix, business rules, final-unit flow, and
-  identity isolation.
+- pgTAP tests for schema, privilege matrix, business rules, final-unit flow,
+  identity isolation, administrative transitions, and refunds.
 
 Executed against the local Supabase PostgreSQL stack:
 
 - Clean database reset with all migrations and seed.
-- Eight pgTAP files with 135 successful assertions.
+- Nine pgTAP files with 170 successful assertions.
 - Supabase database lint at warning level with no schema errors.
 - Browser-client Auth smoke test for anonymous isolation, account profile creation,
   direct-mutation denial, and validated profile updates.
@@ -128,6 +134,8 @@ Executed against the local Supabase PostgreSQL stack:
   enforcement, exact-inventory isolation, and denial of raw-product reads.
 - Signed guest-order smoke test for database totals, 15/25-minute limits,
   idempotency, ownership isolation, and payment reporting.
+- Administrator-order smoke test for list/detail isolation, paid confirmation,
+  private evidence, signed access, inventory conversion, and refund audit reasons.
 
 A sustained two-connection concurrency stress test remains part of Phase 10. The
 Phase 3 reservation suite already verifies final-unit exclusion through the secure

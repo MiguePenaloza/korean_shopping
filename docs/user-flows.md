@@ -88,3 +88,26 @@ reveal whether an email is registered.
 4. Administrator verifies the payment.
 5. Administrator optionally uploads private evidence and marks the order paid.
 6. The order becomes confirmed for purchasing in Korea.
+
+The administrator may also attach evidence after confirming payment. Each file is
+private, records uploader and date, and is opened through a short-lived signed link.
+
+## Rejected payment or cancellation
+
+1. Administrator opens the live order detail.
+2. For a rejected payment, records a reason and confirms rejection.
+3. For an unpaid cancellation, records a reason and confirms cancellation.
+4. PostgreSQL releases any active reservation.
+5. The reason and resulting states remain in the order timeline.
+
+## Refund
+
+1. A reported or confirmed payment is marked `refund_pending` with a reason.
+2. PostgreSQL releases active inventory or reverses converted confirmed inventory.
+3. Administrator returns the money personally through the customer's QR.
+4. Administrator marks the order `refunded` with the return reason.
+
+The normal late-payment flow is `expired → refund_pending → refunded`. If there is
+still time to buy, the administrator may exceptionally accept the expired payment
+only after entering a reason; PostgreSQL revalidates stock under locks and stores
+an administrative override.

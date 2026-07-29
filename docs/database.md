@@ -2,7 +2,7 @@
 
 ## Current result
 
-The Supabase schema is defined by seven ordered migrations:
+The Supabase schema is defined by eight ordered migrations:
 
 1. `20260727010000_initial_schema.sql` — types, tables, constraints, indexes, and
    RLS activation.
@@ -22,6 +22,9 @@ The Supabase schema is defined by seven ordered migrations:
 7. `20260728020000_cart_orders_whatsapp.sql` — acceptance timestamps, public
    checkout wrapper, ownership-checked confirmation, reduced campaign visibility,
    and explicit payment-report privileges.
+8. `20260728030000_order_administration.sql` — administrator order projections,
+   controlled state transitions, audited reasons, safe paid confirmation, inventory
+   reversal for refunds, and private evidence registration.
 
 `supabase/seed.sql` contains development-only categories, rates, products, and
 price versions. It contains no real customer or payment data.
@@ -124,13 +127,22 @@ the acceptance check. `get_own_order_confirmation` checks JWT ownership and retu
 only the fields, item snapshots, deadlines, and WhatsApp contact needed on the
 confirmation screen. Raw campaign configuration is not browser-readable.
 
-`report_order_payment` can be called only by the order owner during the initial
-window. It records `payment_reported` and extends reservations to the minute-25
-deadline; it cannot mark an order paid.
+The browser-facing `report_own_order_payment` verifies ownership and delegates to
+the internal payment-report function during the initial window. It records
+`payment_reported` and extends reservations to the minute-25 deadline; it cannot
+mark an order paid.
 
-`admin_confirm_order_paid` locks the order and each product. Late payment requires
-an explicit flag and a reason of at least ten characters, revalidates inventory,
-and creates an override audit record.
+The lower-level `admin_confirm_order_paid` is no longer browser-executable.
+`admin_mark_order_paid` wraps it with a reduced result and optional evidence
+metadata. It locks the order and each product. Late payment requires an explicit
+flag and a reason of at least ten characters, revalidates inventory after expiring
+stale reservations, and creates an override audit record.
+
+`admin_change_order_state` is the authoritative state machine for administrative
+payment notices, rejections, cancellations, pending refunds, and completed refunds.
+Reasons are required for destructive or financial actions and are copied into
+`order_status_history`. Starting a refund releases active inventory or reverses
+previously converted inventory exactly once.
 
 ## Expiration
 
@@ -152,7 +164,9 @@ versions using a selected exchange rate.
   JPEG/PNG/WebP.
 
 The relational evidence row stores uploader, original filename, MIME type, size,
-path, and creation time. No automatic evidence deletion is configured.
+path, and creation time. Metadata inserts use a secure RPC that requires the object
+to exist in the private bucket and binds its path to the order UUID. No automatic
+evidence deletion is configured.
 
 ## Tests
 
@@ -171,6 +185,9 @@ path, and creation time. No automatic evidence deletion is configured.
   reviewed-rate creation, fixed 3% contingency, and bulk repricing.
 - Checkout acceptance, signed guest identity, ownership isolation, idempotent
   confirmation, 15/25-minute deadlines, and WhatsApp contact projection.
+- Administrator list/detail isolation, safe transitions, rejection and cancellation
+  release, refund completion, late-payment override, evidence-path validation, and
+  auditable reasons.
 
 Local execution requires Docker and the Supabase CLI:
 
@@ -185,8 +202,8 @@ replace applying the migrations to PostgreSQL or executing pgTAP.
 
 Verified locally on 28 July 2026 with Docker and Supabase CLI:
 
-- A clean `supabase db reset` applied all seven migrations and the seed.
-- `supabase test db` passed 8 files and 135 assertions.
+- A clean `supabase db reset` applied all eight migrations and the seed.
+- `supabase test db` passed 9 files and 170 assertions.
 - `supabase db lint --local --schema public --level warning --fail-on warning`
   reported no schema warnings or errors.
 

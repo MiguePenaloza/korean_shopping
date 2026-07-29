@@ -40,6 +40,7 @@ the next whole boliviano.
 
 ## Current implementation boundary
 
-Through Phase 5, identity and the public catalogue use Supabase. Product
-administration, cart reservations, orders, payments, evidence, and WhatsApp actions
-remain simulated until their corresponding approved phases.
+Through Phase 8, identity, catalogue, products, pricing, cart, checkout, WhatsApp,
+payment administration, refunds, audit history, and private evidence use Supabase.
+Permanent-account customer history remains for Phase 9; production providers and
+deployment remain for Phase 11.

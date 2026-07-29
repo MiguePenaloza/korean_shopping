@@ -160,3 +160,31 @@ Manual review before Phase 8:
 - [ ] Open both WhatsApp buttons on a physical phone and review the messages.
 - [ ] Wait past minutes 15 and 25 and confirm the correct actions are disabled.
 - [ ] Review the full cart and confirmation flow at 320 px and with keyboard only.
+
+## Phase 8
+
+Automated:
+
+- [x] Customers cannot call administrator order list or detail RPCs.
+- [x] Browser identities cannot execute the lower-level paid-confirmation function.
+- [x] Payment notices, rejection, cancellation, and refunds use validated transitions.
+- [x] Rejection and cancellation release active reservations.
+- [x] Paid confirmation converts inventory without double counting.
+- [x] Refund initiation reverses converted inventory once.
+- [x] Late payment requires a reason and stores an administrator override.
+- [x] Evidence metadata requires an existing private object in the order directory.
+- [x] Customers cannot download evidence or insert its metadata directly.
+- [x] Nine pgTAP files pass with 170 assertions.
+
+Manual review before Phase 9:
+
+- [ ] Review the real order list and every filter from an administrator phone.
+- [ ] Open a customer's WhatsApp conversation from the order detail.
+- [ ] Mark an active order paid with and without a selected screenshot.
+- [ ] Attach a second screenshot after payment and open both private links.
+- [ ] Reject a payment and confirm the unit returns to available inventory.
+- [ ] Cancel an unpaid order and review its audit timeline.
+- [ ] Complete `refund_pending → refunded` after a real test QR return.
+- [ ] Accept an expired payment exceptionally and review the recorded reason.
+- [ ] Confirm a customer account cannot open any administrator order or evidence.
+- [ ] Review the detail at 320 px and complete every action using only the keyboard.

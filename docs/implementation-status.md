@@ -21,7 +21,7 @@ Last updated: 28 July 2026 (`America/La_Paz`)
 |     5 | Public catalogue       | completed | All automated checks passed     |
 |     6 | Administrator products | completed | All automated checks passed     |
 |     7 | Cart and orders        | completed | All automated checks passed     |
-|     8 | Order administration   | pending   | Requires explicit authorization |
+|     8 | Order administration   | completed | All automated checks passed     |
 |     9 | Customer tracking      | pending   | Requires explicit authorization |
 |    10 | Hardening              | pending   | Requires explicit authorization |
 |    11 | Deployment             | pending   | Requires explicit authorization |
@@ -94,8 +94,7 @@ Completed on 27 July 2026:
   `docs/manual-test-checklist.md`; these require human review.
 - The local Supabase stack is available through Docker. Production Supabase is not
   configured yet and remains part of Phase 11.
-- Real order creation and WhatsApp behavior remain intentionally disconnected
-  until Phase 7.
+- Permanent-account order history and customer timeline remain for Phase 9.
 - Google OAuth, production SMTP, production Turnstile, and the real administrator
   account require provider configuration in Phase 11. Local email links are
   inspectable through Mailpit.
@@ -332,7 +331,58 @@ Completed on 28 July 2026:
 - The local database was reset after the smoke test, then Supabase was stopped with
   clean seed data preserved.
 
+## Phase 8 scope
+
+Completed on 28 July 2026:
+
+- Live administrator dashboard, order list, filters, and detailed order view.
+- Customer contact, immutable item snapshots, Bolivia deadlines, legal acceptance,
+  payment state, order state, and full administrative timeline.
+- Authoritative actions to register payment notices, reject payments, cancel unpaid
+  orders, start refunds, and complete refunds.
+- Required reasons persisted in the audit history for financial or destructive
+  actions.
+- Safe paid confirmation with idempotent conversion into confirmed inventory.
+- Correct release of active reservations and one-time reversal of converted
+  inventory when a refund begins.
+- Exceptional late-payment acceptance with locked stock revalidation, required
+  reason, and an administrator override record.
+- Optional evidence during paid confirmation or afterwards.
+- Private JPEG/PNG/WebP evidence limited to 10 MB, bound to its order path, and
+  opened through short-lived signed links.
+- Direct browser evidence-metadata inserts and the lower-level paid-confirmation RPC
+  revoked.
+
+Excluded until later:
+
+- Permanent-account customer order history and timeline integration (Phase 9).
+- Extended security, accessibility, dependency, and concurrency review (Phase 10).
+- Production Supabase, providers, and hosting configuration (Phase 11).
+
+## Phase 8 validation record
+
+Completed on 28 July 2026:
+
+- `npm run format:check`: passed with exit code 0.
+- `npm run lint -- --max-warnings=0`: passed with exit code 0.
+- `npm run typecheck`: passed with exit code 0.
+- `npm run test`: 8 frontend test files and 20 tests passed.
+- `npm run db:check`: 8 migrations, 14 RLS tables, 28 secure functions, and
+  9 pgTAP suites passed structural validation.
+- `supabase db reset --local`: all 8 migrations and the seed applied cleanly.
+- `supabase test db`: 9 files and 170 assertions passed.
+- `supabase db lint --local --schema public --level warning --fail-on warning`: no
+  schema warnings or errors found.
+- `npm run smoke:admin-orders`: administrator list/detail isolation, paid
+  confirmation, private evidence, signed access, customer denial, inventory
+  conversion, refunds, and audit reasons passed through the Supabase SDK.
+- `npm run build`: 25 static pages generated across 24 application routes.
+- `npm run smoke:static`: 17 representative URLs returned HTTP 200 and the
+  temporary server closed itself.
+- The local database was reset after the smoke test and Supabase was stopped with
+  clean seed data preserved.
+
 ## Next phase
 
-Phase 8 — Order administration. It requires explicit user authorization and must not
+Phase 9 — Customer tracking. It requires explicit user authorization and must not
 begin automatically.

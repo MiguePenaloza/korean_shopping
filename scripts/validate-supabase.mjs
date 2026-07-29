@@ -23,8 +23,8 @@ function occurrences(source, pattern) {
 
 requireCondition(migrations.length >= 3, "Expected at least three ordered migrations.");
 requireCondition(
-  tests.length >= 8,
-  "Expected schema, security, business, reservation, identity, catalogue, administrator-product, and checkout tests.",
+  tests.length >= 9,
+  "Expected schema, security, business, reservation, identity, catalogue, product, checkout, and order-administration tests.",
 );
 
 const migrationSql = migrations
@@ -85,6 +85,11 @@ const requiredFunctions = [
   "submit_order",
   "get_own_order_confirmation",
   "report_own_order_payment",
+  "admin_list_orders",
+  "admin_get_order_detail",
+  "admin_change_order_state",
+  "admin_attach_payment_evidence",
+  "admin_mark_order_paid",
 ];
 
 for (const functionName of requiredFunctions) {
@@ -201,6 +206,22 @@ requireCondition(
     migrationSql,
   ),
   "Raw campaign configuration remains browser-readable.",
+);
+requireCondition(
+  /revoke all on function public\.admin_confirm_order_paid\(uuid, boolean, text\)[\s\S]{0,100}from public, anon, authenticated/i.test(
+    migrationSql,
+  ),
+  "The lower-level paid-confirmation RPC remains browser-executable.",
+);
+requireCondition(
+  /revoke insert, update, delete on public\.payment_evidence from authenticated/i.test(
+    migrationSql,
+  ),
+  "Payment evidence metadata can still be mutated directly by browser identities.",
+);
+requireCondition(
+  /p_order_id::text[\s\S]{0,120}\(jpg\|jpeg\|png\|webp\)/i.test(migrationSql),
+  "Private evidence paths are not bound to their order directory.",
 );
 
 for (const name of [...migrations, ...tests]) {
