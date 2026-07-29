@@ -40,7 +40,8 @@ the next whole boliviano.
 
 ## Current implementation boundary
 
-Through Phase 9, identity, catalogue, products, pricing, cart, checkout, WhatsApp,
-payment administration, refunds, audit history, private evidence, and
-permanent-account customer tracking use Supabase. Hardening remains for Phase 10;
-production providers and deployment remain for Phase 11.
+Through Phase 10, identity, catalogue, products, pricing, cart, checkout, WhatsApp,
+payment administration, refunds, audit history, private evidence,
+permanent-account customer tracking, concurrency, upload hardening, and static
+accessibility/security checks are implemented. Production providers and deployment
+remain for Phase 11.

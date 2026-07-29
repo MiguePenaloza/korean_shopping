@@ -10,7 +10,7 @@ export default function CustomerOrdersLayout({
   return (
     <Suspense
       fallback={
-        <div className="page-container" role="status">
+        <div id="main-content" className="page-container" role="status" tabIndex={-1}>
           <p className="text-muted">Revisando tu cuenta…</p>
         </div>
       }

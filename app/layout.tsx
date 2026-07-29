@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { CartProvider } from "@/components/cart/cart-provider";
@@ -14,14 +14,22 @@ export const metadata: Metadata = {
   applicationName: "Belle Perle, Korean Shopping",
 };
 
+export const viewport: Viewport = {
+  colorScheme: "light",
+  themeColor: "#fffaf8",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="h-full antialiased">
+    <html lang="es-BO" className="h-full antialiased">
       <body className="flex min-h-full flex-col">
+        <a className="skip-link" href="#main-content">
+          Saltar al contenido principal
+        </a>
         <AuthProvider>
           <CartProvider>{children}</CartProvider>
         </AuthProvider>

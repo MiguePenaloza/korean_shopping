@@ -29,8 +29,8 @@ Runtime entities will use static routes plus query parameters, for example
 
 The Supabase backend contains:
 
-- Nine ordered SQL migrations.
-- Ten pgTAP suites and development seed data.
+- Ten ordered SQL migrations.
+- Eleven pgTAP suites and development seed data.
 - Public catalogue projection with no exact stock or cost fields.
 - Secure RPC boundaries for prices, checkout, payment reporting, and payment
   confirmation.
@@ -112,6 +112,21 @@ Phase 9 connects permanent-account tracking:
 - Administrators can advance only the ordered paid journey:
   `confirmed → purchased → in_transit → ready_for_delivery → delivered`.
 
+Phase 10 hardens the complete local architecture:
+
+- Storage write policies accept only generated product and order object paths.
+- Evidence attachment compares declared MIME type and size with private Storage
+  metadata; the browser also checks the real JPEG, PNG, or WebP signature.
+- A live two-client race verifies that row locks allow exactly one checkout for
+  the final unit, while repeated requests remain idempotent.
+- Static Cloudflare headers provide CSP, frame denial, MIME sniffing prevention,
+  referrer control, and a restrictive permissions policy.
+- Every exported application route receives a unique title, `es-BO` language,
+  skip navigation, visible focus, reduced-motion support, AA text contrast, and
+  touch-target checks.
+- Production dependencies use reviewed patch versions and patched transitive
+  PostCSS/Sharp releases.
+
 ## Order data flow
 
 1. The browser reads a safe public product projection.
@@ -152,6 +167,11 @@ functions are authoritative.
   private evidence, confirmed inventory, and refund audit history.
 - `scripts/customer-tracking-smoke.mjs` verifies permanent-account ownership,
   guest exclusion, raw-table denial, safe timelines, and fulfillment updates.
+- `scripts/hardening-smoke.mjs` verifies live concurrency, retry idempotency,
+  payment windows, immutable repricing snapshots, and private evidence.
+- `scripts/validate-static-quality.mjs` checks the exported accessibility,
+  security-header, and compressed JavaScript budgets without adding a browser
+  runtime or persistent server.
 
 ## Static authentication flow
 

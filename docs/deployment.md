@@ -14,6 +14,11 @@ Output directory: out
 Production branch: main
 ```
 
+`public/_headers` is copied into the static artifact and defines the reviewed CSP,
+frame, MIME, referrer, and permissions headers. During Phase 11, verify the actual
+Cloudflare response headers and add any production custom Supabase domain to
+`connect-src` and `img-src` before enabling it.
+
 ## Required services
 
 - Supabase development and production projects.
@@ -63,6 +68,8 @@ Never call this procedure from browser code and never place a service-role key i
 ## Production checks
 
 - Static build and direct route loading.
+- Actual Cloudflare security headers and CSP without blocked Supabase or Turnstile
+  requests.
 - RLS and Storage access matrix.
 - Auth redirects and password recovery.
 - Anonymous checkout protection.

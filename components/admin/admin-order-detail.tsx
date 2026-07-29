@@ -70,6 +70,10 @@ function actionError(error: unknown) {
     FULFILLMENT_TRANSITION_NOT_ALLOWED:
       "El pedido cambió de estado o todavía no tiene el pago confirmado.",
     INVALID_EVIDENCE_FILE: "El comprobante no tiene un formato o tamaño permitido.",
+    INVALID_EVIDENCE_CONTENT:
+      "El contenido del comprobante no corresponde a una imagen válida.",
+    EVIDENCE_METADATA_MISMATCH:
+      "Los datos del archivo no coinciden con el comprobante almacenado.",
     EVIDENCE_UPLOAD_FAILED: "No pudimos subir el comprobante privado.",
   };
   return (

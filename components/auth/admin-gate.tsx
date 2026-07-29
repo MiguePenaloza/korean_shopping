@@ -9,7 +9,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <main className="page-container" role="status">
+      <main id="main-content" className="page-container" role="status" tabIndex={-1}>
         <p className="text-muted">Verificando acceso administrativo…</p>
       </main>
     );
@@ -17,7 +17,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
 
   if (!configured || !user || !isAdmin) {
     return (
-      <main className="page-container">
+      <main id="main-content" className="page-container" tabIndex={-1}>
         <Card className="mx-auto max-w-lg p-6 text-center sm:p-8">
           <h1 className="text-3xl font-black">Acceso administrativo</h1>
           <p className="mt-3 leading-7 text-muted">

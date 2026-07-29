@@ -2,7 +2,7 @@
 
 ## Current result
 
-The Supabase schema is defined by nine ordered migrations:
+The Supabase schema is defined by ten ordered migrations:
 
 1. `20260727010000_initial_schema.sql` — types, tables, constraints, indexes, and
    RLS activation.
@@ -28,6 +28,9 @@ The Supabase schema is defined by nine ordered migrations:
 9. `20260728040000_customer_tracking.sql` — permanent-account guard, paginated own
    history, customer-safe detail and timeline, raw-order read revocation, and
    ordered administrator fulfillment updates.
+10. `20260728050000_hardening.sql` — generated Storage-path enforcement, evidence
+    object metadata verification, bounded audit reasons and filenames, and reduced
+    anonymous function privileges.
 
 `supabase/seed.sql` contains development-only categories, rates, products, and
 price versions. It contains no real customer or payment data.
@@ -179,8 +182,9 @@ versions using a selected exchange rate.
 
 The relational evidence row stores uploader, original filename, MIME type, size,
 path, and creation time. Metadata inserts use a secure RPC that requires the object
-to exist in the private bucket and binds its path to the order UUID. No automatic
-evidence deletion is configured.
+to exist in the private bucket, binds its path to the order UUID, and compares the
+declared type and size with Storage metadata. Storage policies accept only generated
+UUID-based product/order paths. No automatic evidence deletion is configured.
 
 ## Tests
 
@@ -205,6 +209,8 @@ evidence deletion is configured.
 - Permanent-account-only history, public-number detail, pagination, guest and
   cross-account denial, no phone reclaim, reduced timeline fields, and fulfillment
   progression.
+- Hardened upload paths, evidence metadata matching, bounded audit fields, reduced
+  anonymous privileges, and private evidence attachment.
 
 Local execution requires Docker and the Supabase CLI:
 
@@ -219,10 +225,13 @@ replace applying the migrations to PostgreSQL or executing pgTAP.
 
 Verified locally on 28 July 2026 with Docker and Supabase CLI:
 
-- A clean `supabase db reset` applied all nine migrations and the seed.
-- `supabase test db` passed 10 files and 196 assertions.
+- A clean `supabase db reset` applied all ten migrations and the seed.
+- `supabase test db` passed 11 files and 209 assertions.
 - `supabase db lint --local --schema public --level warning --fail-on warning`
   reported no schema warnings or errors.
+- A live two-client SDK race allowed exactly one order for the final unit and
+  preserved idempotent retries, 15/25-minute deadlines, and immutable order prices
+  during bulk repricing.
 
 ## Migration discipline
 

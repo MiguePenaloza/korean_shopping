@@ -99,6 +99,8 @@ service-role key must never be copied into this static application.
 | Reading exact stock                 | Public view returns a state label, not inventory counts               |
 | Reading payment evidence            | Private bucket and admin-only Storage/table policies                  |
 | Forging evidence metadata           | Direct inserts revoked; RPC validates object, type, size, and path    |
+| Disguised or mismatched image       | Browser magic-byte check plus stored MIME/size comparison             |
+| Uploading outside generated folders | Storage policies require UUID-based product or order paths            |
 | Replacing historical price          | Immutable price-version and order-item triggers                       |
 | Admin accepts late payment silently | Required reason and `order_admin_overrides` audit row                 |
 | Invalid order-state jump            | One locked RPC validates each allowed transition and required reason  |
@@ -133,7 +135,7 @@ Implemented:
 Executed against the local Supabase PostgreSQL stack:
 
 - Clean database reset with all migrations and seed.
-- Ten pgTAP files with 196 successful assertions.
+- Eleven pgTAP files with 209 successful assertions.
 - Supabase database lint at warning level with no schema errors.
 - Browser-client Auth smoke test for anonymous isolation, account profile creation,
   direct-mutation denial, and validated profile updates.
@@ -145,10 +147,20 @@ Executed against the local Supabase PostgreSQL stack:
   private evidence, signed access, inventory conversion, and refund audit reasons.
 - Customer-tracking smoke test for permanent ownership, phone non-claim, guest and
   cross-account denial, raw-table denial, safe timelines, and fulfillment updates.
+- Hardening smoke test with two simultaneous authenticated checkouts: exactly one
+  acquired the final unit, the loser received `INSUFFICIENT_STOCK`, and retry
+  idempotency remained intact.
+- Product and order regression smoke tests after the Storage policies were
+  restricted.
+- `npm audit --omit=dev`: zero known production vulnerabilities after updating
+  Next.js and pinning patched PostCSS and Sharp releases.
 
-A sustained two-connection concurrency stress test remains part of Phase 10. The
-Phase 3 reservation suite already verifies final-unit exclusion through the secure
-checkout function.
+The full development audit still reports the current `minimatch`/`brace-expansion`
+advisory chain inherited through ESLint 9 and `eslint-config-next`. ESLint 10 removes
+the affected chain but is not yet accepted by the installed React accessibility and
+import plugins. These packages are build-time tools, are not shipped in `out/`, and
+are run only against trusted repository patterns. The project therefore keeps the
+compatible linter instead of applying npm's breaking downgrade suggestions.
 
 ## Secrets
 

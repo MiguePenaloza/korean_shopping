@@ -1,5 +1,9 @@
+import type { Metadata } from "next";
+
 import { AdminProductList } from "@/components/admin/admin-product-list";
 import { ButtonLink } from "@/components/ui/button";
+
+export const metadata: Metadata = { title: "Productos" };
 
 export default function AdminProductsPage() {
   return (

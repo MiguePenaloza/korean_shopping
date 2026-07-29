@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   getAdminEvidenceUrl,
   validateEvidenceFile,
+  validateEvidenceFileContent,
   type AdminPaymentEvidence,
 } from "@/lib/admin/orders";
 
@@ -93,7 +94,7 @@ export function PaymentEvidence({
 }: PaymentEvidenceProps) {
   const [validationMessage, setValidationMessage] = useState("");
 
-  function selectFile(file: File | null) {
+  async function selectFile(file: File | null) {
     if (!file) {
       setValidationMessage("");
       onFileChange(null);
@@ -102,6 +103,13 @@ export function PaymentEvidence({
     const validation = validateEvidenceFile(file);
     if (validation) {
       setValidationMessage(validation);
+      onFileChange(null);
+      return;
+    }
+    setValidationMessage("Verificando la imagen…");
+    const contentValidation = await validateEvidenceFileContent(file);
+    if (contentValidation) {
+      setValidationMessage(contentValidation);
       onFileChange(null);
       return;
     }
@@ -126,7 +134,7 @@ export function PaymentEvidence({
           type="file"
           accept="image/png,image/jpeg,image/webp"
           disabled={disabled}
-          onChange={(event) => selectFile(event.target.files?.[0] ?? null)}
+          onChange={(event) => void selectFile(event.target.files?.[0] ?? null)}
         />
       </label>
       {validationMessage ? (
@@ -148,7 +156,7 @@ export function PaymentEvidence({
             size="sm"
             variant="ghost"
             disabled={disabled || uploading}
-            onClick={() => selectFile(null)}
+            onClick={() => void selectFile(null)}
           >
             Quitar selección
           </Button>

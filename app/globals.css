@@ -51,6 +51,23 @@ body {
   font-family: "Segoe UI", Arial, Helvetica, sans-serif;
 }
 
+.skip-link {
+  background: var(--foreground);
+  border-radius: 0 0 0.75rem 0;
+  color: white;
+  font-weight: 700;
+  left: 0;
+  padding: 0.8rem 1rem;
+  position: fixed;
+  top: 0;
+  transform: translateY(-120%);
+  z-index: 100;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
 .nav-link {
   border-radius: 0.75rem;
   color: var(--muted);
@@ -197,7 +214,7 @@ a {
 }
 
 :focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--accent) 55%, white);
+  outline: 3px solid var(--accent-strong);
   outline-offset: 3px;
 }
 

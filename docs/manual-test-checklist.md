@@ -214,3 +214,40 @@ Manual review before Phase 10:
 - [ ] Open the contextual WhatsApp help message from a physical phone.
 - [ ] Sign out from a detail URL, sign in again, and confirm the full URL is restored.
 - [ ] Review list, detail, pagination, and timeline at 320 px and by keyboard.
+
+## Phase 10
+
+Automated:
+
+- [x] Two simultaneous authenticated checkouts allow exactly one winner for the
+      final unit.
+- [x] Retry idempotency returns the same order after the concurrency race.
+- [x] Database and SDK checks cover the 15-minute reservation and minute-25
+      payment-report windows.
+- [x] Bulk repricing leaves existing order item prices and totals unchanged.
+- [x] Product and payment-evidence uploads require generated UUID-based paths.
+- [x] Evidence MIME type and size must match private Storage metadata.
+- [x] Disguised JPEG/PNG/WebP files are rejected by browser signature checks.
+- [x] Eleven pgTAP files pass with 209 assertions.
+- [x] Production dependency audit reports zero known vulnerabilities.
+- [x] Every exported application route has `es-BO`, viewport metadata, a unique
+      title, and keyboard skip navigation.
+- [x] Static checks confirm AA text contrast, visible focus, reduced motion,
+      44/48 px touch targets, image alternatives, safe new tabs, and Cloudflare
+      security headers.
+- [x] The largest route references 259,584 gzip bytes of initial JavaScript, below
+      the 300 KiB hardening budget.
+
+Manual review before Phase 11:
+
+- [ ] Review all customer and administrator routes at 320 px without horizontal
+      scrolling.
+- [ ] Complete guest checkout, account checkout, and administration using only the
+      keyboard.
+- [ ] Review focus order and route announcements with a screen reader.
+- [ ] Check every status and warning in high-contrast or forced-colors mode.
+- [ ] Test catalogue loading and checkout on a throttled mid-range Android phone.
+- [ ] Review the purchase conditions and privacy policy with a Bolivian legal
+      professional.
+- [ ] Confirm the business identity, delivery responsibility, retention periods,
+      tax disclosures, and a non-WhatsApp privacy contact if required.

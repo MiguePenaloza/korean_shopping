@@ -23,8 +23,8 @@ function occurrences(source, pattern) {
 
 requireCondition(migrations.length >= 3, "Expected at least three ordered migrations.");
 requireCondition(
-  tests.length >= 10,
-  "Expected schema, security, business, reservation, identity, catalogue, product, checkout, administration, and customer-tracking tests.",
+  tests.length >= 11,
+  "Expected schema, security, business, reservation, identity, catalogue, product, checkout, administration, customer-tracking, and hardening tests.",
 );
 
 const migrationSql = migrations
@@ -246,6 +246,22 @@ requireCondition(
     migrationSql,
   ),
   "Administrator fulfillment does not enforce the ordered customer journey.",
+);
+requireCondition(
+  /revoke execute on function public\.is_admin\(\) from anon/i.test(migrationSql),
+  "Plain anon can still execute the administrator-role helper.",
+);
+requireCondition(
+  /payment_evidence_filename_control_check/i.test(migrationSql),
+  "Payment evidence filenames do not reject control characters.",
+);
+requireCondition(
+  /EVIDENCE_METADATA_MISMATCH/i.test(migrationSql),
+  "Evidence attachment does not compare declared and stored metadata.",
+);
+requireCondition(
+  /name ~ '\^orders\/\[0-9a-f\]/i.test(migrationSql),
+  "Private evidence Storage writes are not restricted to generated order paths.",
 );
 
 for (const name of [...migrations, ...tests]) {

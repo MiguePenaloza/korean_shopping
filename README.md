@@ -5,16 +5,17 @@ durante un viaje de compras a Corea.
 
 ## Estado
 
-La Fase 9 conecta `Mis pedidos` a Supabase para cuentas permanentes. Cada cliente
-ve únicamente los pedidos creados con su cuenta, sus productos, pago y línea de
-tiempo; los invitados continúan por WhatsApp sin historial web.
+La Fase 10 completa el hardening local: concurrencia real sobre la última unidad,
+validación reforzada de comprobantes, encabezados de seguridad, accesibilidad
+automatizada, presupuesto de JavaScript y dependencias de producción sin
+vulnerabilidades conocidas por `npm audit`.
 
 Consulta [docs/implementation-status.md](docs/implementation-status.md) para conocer
 el avance y la siguiente fase autorizable.
 
 ## Tecnología
 
-- Next.js 16.2.11 con App Router.
+- Next.js 16.2.12 con App Router.
 - React 19.2.
 - TypeScript estricto.
 - Tailwind CSS 4.
@@ -63,18 +64,23 @@ npm run format
 npm run format:check
 npm run build
 npm run smoke:static
+npm run quality:static
 npm run smoke:auth
 npm run smoke:catalogue
 npm run smoke:admin-products
 npm run smoke:orders
 npm run smoke:admin-orders
 npm run smoke:tracking
+npm run smoke:hardening
 npm run db:check
 ```
 
 `npm run build` produce el sitio estático en `out/`.
 `npm run smoke:static` sirve esa carpeta temporalmente, comprueba las rutas
 principales con un timeout y cierra el servidor automáticamente.
+`npm run quality:static` revisa títulos, idioma, viewport, salto al contenido,
+alternativas de imágenes, contraste, foco, movimiento reducido, objetivos táctiles,
+encabezados de seguridad y el presupuesto comprimido de JavaScript.
 `npm run db:check` valida de forma finita la estructura de migraciones, RLS,
 funciones, Storage, Cron y pruebas SQL.
 `npm run smoke:auth` requiere `BP_SUPABASE_URL` y
@@ -93,6 +99,9 @@ sesión normal y verifican pagos, reembolsos y comprobantes privados.
 `npm run smoke:tracking` usa las mismas variables locales para comprobar aislamiento
 entre cuentas, exclusión de invitados, cierre de tablas crudas y actualizaciones de
 seguimiento.
+`npm run smoke:hardening` ejecuta dos checkouts realmente simultáneos sobre la
+última unidad y comprueba idempotencia, ventanas 15/25, snapshots de precio y
+aislamiento de comprobantes.
 
 ## Base de datos y administrador
 
@@ -123,6 +132,9 @@ catálogo ni los pedidos existentes.
 - La administración y el historial de clientes con cuenta ya usan datos reales.
 - Los pedidos de invitados no se vinculan posteriormente por coincidencia de
   teléfono.
+- Los documentos visibles de compra y privacidad describen el flujo implementado,
+  pero conservan la etiqueta `Versión para revisión legal` hasta una revisión
+  profesional previa al lanzamiento.
 - Los botones de la confirmación real ya abren WhatsApp con mensajes
   predeterminados.
 - El ingreso, registro, recuperación, perfiles, sesión anónima y catálogo público

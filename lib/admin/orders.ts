@@ -210,6 +210,7 @@ function adminError(error: { message?: string } | null) {
     "FULFILLMENT_TRANSITION_NOT_ALLOWED",
     "INVALID_EVIDENCE_PATH",
     "INVALID_EVIDENCE_FILE",
+    "EVIDENCE_METADATA_MISMATCH",
     "EVIDENCE_OBJECT_NOT_FOUND",
   ]) {
     if (message.includes(code)) return new Error(code);
@@ -341,6 +342,37 @@ export function validateEvidenceFile(file: Pick<File, "size" | "type">) {
   return null;
 }
 
+export async function validateEvidenceFileContent(file: Pick<File, "slice" | "type">) {
+  const header = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  const isJpeg = header[0] === 0xff && header[1] === 0xd8 && header[2] === 0xff;
+  const isPng =
+    header[0] === 0x89 &&
+    header[1] === 0x50 &&
+    header[2] === 0x4e &&
+    header[3] === 0x47 &&
+    header[4] === 0x0d &&
+    header[5] === 0x0a &&
+    header[6] === 0x1a &&
+    header[7] === 0x0a;
+  const isWebp =
+    header[0] === 0x52 &&
+    header[1] === 0x49 &&
+    header[2] === 0x46 &&
+    header[3] === 0x46 &&
+    header[8] === 0x57 &&
+    header[9] === 0x45 &&
+    header[10] === 0x42 &&
+    header[11] === 0x50;
+  const contentMatches =
+    (file.type === "image/jpeg" && isJpeg) ||
+    (file.type === "image/png" && isPng) ||
+    (file.type === "image/webp" && isWebp);
+
+  return contentMatches
+    ? null
+    : "El contenido del archivo no coincide con una imagen JPEG, PNG o WebP válida.";
+}
+
 function evidenceExtension(contentType: string) {
   if (contentType === "image/png") return "png";
   if (contentType === "image/webp") return "webp";
@@ -350,6 +382,9 @@ function evidenceExtension(contentType: string) {
 async function uploadEvidence(orderId: string, file: File): Promise<EvidenceUpload> {
   const validation = validateEvidenceFile(file);
   if (validation) throw new Error("INVALID_EVIDENCE_FILE");
+  if (await validateEvidenceFileContent(file)) {
+    throw new Error("INVALID_EVIDENCE_CONTENT");
+  }
 
   const storagePath = `orders/${orderId}/${crypto.randomUUID()}.${evidenceExtension(file.type)}`;
   const { error } = await client()

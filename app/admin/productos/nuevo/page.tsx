@@ -1,4 +1,8 @@
+import type { Metadata } from "next";
+
 import { PricePreviewForm } from "@/components/admin/price-preview-form";
+
+export const metadata: Metadata = { title: "Crear producto" };
 
 export default function NewProductPage() {
   return (

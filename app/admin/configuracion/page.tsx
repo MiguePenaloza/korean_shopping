@@ -1,5 +1,9 @@
+import type { Metadata } from "next";
+
 import { BulkPricing } from "@/components/admin/bulk-pricing";
 import { Card } from "@/components/ui/card";
+
+export const metadata: Metadata = { title: "Configuración de precios" };
 
 export default function SettingsPage() {
   return (

@@ -6,12 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "smoke:static": "node scripts/static-smoke.mjs",
+    "quality:static": "node scripts/validate-static-quality.mjs",
     "smoke:auth": "node scripts/auth-smoke.mjs",
     "smoke:catalogue": "node scripts/catalogue-smoke.mjs",
     "smoke:admin-products": "node scripts/admin-products-smoke.mjs",
     "smoke:orders": "node scripts/orders-smoke.mjs",
     "smoke:admin-orders": "node scripts/admin-orders-smoke.mjs",
     "smoke:tracking": "node scripts/customer-tracking-smoke.mjs",
+    "smoke:hardening": "node scripts/hardening-smoke.mjs",
     "db:check": "node scripts/validate-supabase.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -22,7 +24,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.9",
-    "next": "16.2.11",
+    "next": "16.2.12",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
@@ -32,11 +34,15 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.11",
+    "eslint-config-next": "16.2.12",
     "prettier": "^3.9.6",
     "supabase": "^2.109.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"
+  },
+  "overrides": {
+    "postcss": "8.5.23",
+    "sharp": "0.35.3"
   }
 }

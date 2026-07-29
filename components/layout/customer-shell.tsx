@@ -11,7 +11,9 @@ export function CustomerShell({
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <SiteHeader />
-      {children}
+      <div id="main-content" tabIndex={-1}>
+        {children}
+      </div>
       <MobileNav active={active} />
     </div>
   );

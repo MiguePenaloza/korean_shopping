@@ -23,7 +23,7 @@ Last updated: 28 July 2026 (`America/La_Paz`)
 |     7 | Cart and orders        | completed | All automated checks passed     |
 |     8 | Order administration   | completed | All automated checks passed     |
 |     9 | Customer tracking      | completed | All automated checks passed     |
-|    10 | Hardening              | pending   | Requires explicit authorization |
+|    10 | Hardening              | completed | All automated checks passed     |
 |    11 | Deployment             | pending   | Requires explicit authorization |
 |    12 | Launch                 | pending   | Requires explicit authorization |
 
@@ -97,9 +97,10 @@ Completed on 27 July 2026:
 - Google OAuth, production SMTP, production Turnstile, and the real administrator
   account require provider configuration in Phase 11. Local email links are
   inspectable through Mailpit.
-- `npm audit --omit=dev` reports three high advisories inherited through Next.js
-  (`postcss` and `sharp`). npm proposes a breaking downgrade to Next.js 9, so no
-  unsafe automatic fix was applied. Recheck during Phase 10 hardening.
+- `npm audit --omit=dev` now reports zero known production vulnerabilities.
+  The full development audit retains the current ESLint 9 advisory chain because
+  ESLint 10 is not yet accepted by the installed React/import/accessibility
+  plugins; these build-only tools are excluded from `out/`.
 
 ## Phase 3 scope
 
@@ -431,7 +432,67 @@ Completed on 28 July 2026:
 - The local database was reset after the smoke test and Supabase was stopped with
   clean seed data preserved.
 
+## Phase 10 scope
+
+Completed on 28 July 2026:
+
+- Live two-client checkout race over the last unit, retry idempotency, and
+  authoritative 15/25-minute deadline verification.
+- Bulk repricing regression with an existing order snapshot.
+- Generated UUID-based Storage paths for product images and private payment
+  evidence.
+- Browser image-signature validation plus database comparison of declared
+  evidence MIME type and size with Storage metadata.
+- Reduced anonymous privileges and bounded evidence filenames and audit reasons.
+- Static Cloudflare CSP, frame, MIME, referrer, and permissions headers.
+- `es-BO`, unique route titles, skip navigation, stronger visible focus,
+  reduced-motion support, AA text contrast, touch-target, image-alt, and safe
+  new-tab validation.
+- A 300 KiB gzip initial-JavaScript budget for every exported route.
+- Next.js patch update and patched PostCSS/Sharp overrides, producing zero known
+  production dependency vulnerabilities.
+- Expanded Spanish purchase conditions and privacy disclosure, clearly marked for
+  professional legal review before launch.
+
+Excluded until later:
+
+- Production Supabase, Google OAuth, SMTP, Turnstile, Cloudflare configuration,
+  and deployment (Phase 11).
+- Physical-phone, screen-reader, real-network, and launch acceptance tests
+  (Phase 12).
+
+## Phase 10 validation record
+
+Completed on 28 July 2026:
+
+- `npm run format:check`: passed with exit code 0.
+- `npm run lint -- --max-warnings=0`: passed with exit code 0.
+- `npm run typecheck`: passed with exit code 0.
+- `npm run test`: 9 frontend test files and 25 tests passed.
+- `npm run db:check`: 10 migrations, 14 RLS tables, 32 secure functions, and
+  11 pgTAP suites passed structural validation.
+- `supabase db reset --local`: all 10 migrations and the seed applied cleanly.
+- `supabase test db`: 11 files and 209 assertions passed.
+- `supabase db lint --local --schema public --level warning --fail-on warning`:
+  no schema warnings or errors found.
+- `npm run smoke:hardening`: simultaneous final-unit checkout, retry idempotency,
+  15/25-minute windows, immutable bulk repricing, strict evidence metadata, and
+  customer download denial passed.
+- `npm run smoke:admin-products` and `npm run smoke:admin-orders`: product images,
+  private payment evidence, payment confirmation, and refunds passed after the
+  Storage restrictions.
+- `npm audit --omit=dev`: zero known production vulnerabilities.
+- `npm run build`: 25 static pages generated across 24 application routes with
+  Next.js 16.2.12.
+- `npm run quality:static`: 25 exported pages, 24 unique route titles, AA static
+  checks, security headers, and a maximum 259,584 gzip bytes of initial JavaScript
+  passed.
+- `npm run smoke:static`: 18 representative URLs returned HTTP 200 and the
+  temporary server closed itself.
+- The local database was reset after smoke tests and Supabase was stopped with
+  clean seed data preserved.
+
 ## Next phase
 
-Phase 10 — Hardening. It requires explicit user authorization and must not begin
+Phase 11 — Deployment. It requires explicit user authorization and must not begin
 automatically.

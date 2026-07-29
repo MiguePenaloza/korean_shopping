@@ -5,6 +5,7 @@ import {
   orderStatusLabels,
   paymentStatusLabels,
   validateEvidenceFile,
+  validateEvidenceFileContent,
 } from "@/lib/admin/orders";
 
 describe("administrator order helpers", () => {
@@ -28,6 +29,21 @@ describe("administrator order helpers", () => {
         size: MAX_EVIDENCE_BYTES + 1,
       }),
     ).toBe("La imagen debe pesar como máximo 10 MB.");
+  });
+
+  it("verifies image signatures instead of trusting the declared MIME type", async () => {
+    const png = new Blob(
+      [new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])],
+      {
+        type: "image/png",
+      },
+    );
+    const disguisedText = new Blob(["not an image"], { type: "image/png" });
+
+    await expect(validateEvidenceFileContent(png)).resolves.toBeNull();
+    await expect(validateEvidenceFileContent(disguisedText)).resolves.toContain(
+      "no coincide",
+    );
   });
 
   it("provides Spanish labels for administrative states", () => {

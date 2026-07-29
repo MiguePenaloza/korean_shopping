@@ -1,4 +1,8 @@
+import type { Metadata } from "next";
+
 import { AdminOrderList } from "@/components/admin/admin-order-list";
+
+export const metadata: Metadata = { title: "Pedidos" };
 
 export default function AdminOrdersPage() {
   return (
