@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:production": "node scripts/validate-production-env.mjs && next build",
+    "check:production-env": "node scripts/validate-production-env.mjs",
     "smoke:static": "node scripts/static-smoke.mjs",
     "quality:static": "node scripts/validate-static-quality.mjs",
     "smoke:auth": "node scripts/auth-smoke.mjs",

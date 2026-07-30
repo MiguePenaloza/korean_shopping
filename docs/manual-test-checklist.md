@@ -251,3 +251,51 @@ Manual review before Phase 11:
       professional.
 - [ ] Confirm the business identity, delivery responsibility, retention periods,
       tax disclosures, and a non-WhatsApp privacy contact if required.
+
+## Phase 11
+
+Provider ownership:
+
+- [ ] Business owner controls Supabase, Cloudflare, Google Cloud, SMTP/domain, and
+      GitHub recovery methods.
+- [x] Existing GitHub remote and `main` production branch identified.
+- [ ] Supabase CLI authenticated interactively by the business owner.
+- [ ] Production Supabase project created in South America (São Paulo).
+- [ ] Cloudflare Pages project connected to the existing GitHub repository.
+- [ ] Business-owned sending domain and SMTP provider verified.
+
+Production configuration:
+
+- [ ] `npm run build:production` passes with the four reviewed public variables.
+- [ ] All repository migrations are applied without development seed data.
+- [ ] Remote migration history matches the repository.
+- [ ] RLS, Storage buckets, Cron, and database advisors are reviewed.
+- [ ] Turnstile site key is in Pages and its secret is only in Supabase.
+- [ ] Site URL and exact `/auth/callback` redirects are allow-listed.
+- [ ] Google OAuth completes a real PKCE round trip.
+- [ ] SMTP sends confirmation and recovery messages to two email providers.
+- [ ] First permanent administrator is promoted through the trusted function.
+- [ ] First real exchange rate is reviewed and saved.
+- [ ] Ordering remains closed.
+- [ ] Production security headers, CSP, direct routes, and rollback are verified.
+
+## Phase 12
+
+Real-device launch rehearsal:
+
+- [ ] Administrator creates a product with three phone photographs.
+- [ ] Administrator reviews KRW → BOB, fixed 3% contingency, margin, and expiration.
+- [ ] Guest completes an order with only name and Bolivian phone.
+- [ ] Google customer completes an order and sees it in `Mis pedidos`.
+- [ ] Email/password customer confirms, recovers access, orders, and sees history.
+- [ ] Both WhatsApp buttons open the reviewed message on a physical phone.
+- [ ] Administrator confirms payment and attaches private evidence.
+- [ ] Customer sees every fulfillment update without administrative notes.
+- [ ] Reservation expiration is observed at minutes 15 and 25.
+- [ ] Expired price blocks checkout and a reviewed bulk update re-enables it.
+- [ ] Late payment, refund, and exceptional acceptance paths are rehearsed.
+- [ ] Two devices race for the final unit and exactly one succeeds.
+- [ ] Customer cannot access administrator data or payment evidence.
+- [ ] Ordering can close without deleting catalogue or history.
+- [ ] Bolivia and Korea phone/network/browser results are recorded.
+- [ ] Legal review, rollback, administrator readiness, and go/no-go are signed off.

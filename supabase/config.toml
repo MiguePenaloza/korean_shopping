@@ -3,7 +3,7 @@ project_id = "belle-perle-korean-shopping"
 [api]
 enabled = true
 port = 54321
-schemas = ["public", "storage", "graphql_public"]
+schemas = ["public", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
@@ -23,12 +23,40 @@ api_url = "http://127.0.0.1"
 
 [auth]
 enabled = true
-site_url = "http://127.0.0.1:3000"
-additional_redirect_urls = ["http://127.0.0.1:3000/**"]
+site_url = "https://belle-perle-korean-shopping.pages.dev"
+additional_redirect_urls = [
+  "https://belle-perle-korean-shopping.pages.dev/auth/callback",
+  "http://127.0.0.1:3000/**",
+]
 jwt_expiry = 3600
 enable_signup = true
 enable_anonymous_sign_ins = true
 
+[auth.captcha]
+enabled = true
+provider = "turnstile"
+secret = "env(SUPABASE_AUTH_CAPTCHA_SECRET)"
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+secure_password_change = false
+max_frequency = "1m"
+otp_length = 8
+otp_expiry = 3600
+
+[auth.mfa]
+max_enrolled_factors = 10
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.mfa.phone]
+enroll_enabled = false
+verify_enabled = false
+
 [storage]
 enabled = true
-file_size_limit = "10MiB"
+file_size_limit = "50MiB"

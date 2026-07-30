@@ -1,6 +1,6 @@
 # Implementation status
 
-Last updated: 28 July 2026 (`America/La_Paz`)
+Last updated: 30 July 2026 (`America/La_Paz`)
 
 ## Status values
 
@@ -11,21 +11,21 @@ Last updated: 28 July 2026 (`America/La_Paz`)
 
 ## Roadmap
 
-| Phase | Name                   | Status    | Validation or gate              |
-| ----: | ---------------------- | --------- | ------------------------------- |
-|     0 | Planning               | completed | Approved implementation plan    |
-|     1 | Local foundation       | completed | All automated checks passed     |
-|     2 | UI prototype           | completed | All automated checks passed     |
-|     3 | Supabase database      | completed | Structural validation passed    |
-|     4 | Identity and access    | completed | All automated checks passed     |
-|     5 | Public catalogue       | completed | All automated checks passed     |
-|     6 | Administrator products | completed | All automated checks passed     |
-|     7 | Cart and orders        | completed | All automated checks passed     |
-|     8 | Order administration   | completed | All automated checks passed     |
-|     9 | Customer tracking      | completed | All automated checks passed     |
-|    10 | Hardening              | completed | All automated checks passed     |
-|    11 | Deployment             | pending   | Requires explicit authorization |
-|    12 | Launch                 | pending   | Requires explicit authorization |
+| Phase | Name                   | Status      | Validation or gate              |
+| ----: | ---------------------- | ----------- | ------------------------------- |
+|     0 | Planning               | completed   | Approved implementation plan    |
+|     1 | Local foundation       | completed   | All automated checks passed     |
+|     2 | UI prototype           | completed   | All automated checks passed     |
+|     3 | Supabase database      | completed   | Structural validation passed    |
+|     4 | Identity and access    | completed   | All automated checks passed     |
+|     5 | Public catalogue       | completed   | All automated checks passed     |
+|     6 | Administrator products | completed   | All automated checks passed     |
+|     7 | Cart and orders        | completed   | All automated checks passed     |
+|     8 | Order administration   | completed   | All automated checks passed     |
+|     9 | Customer tracking      | completed   | All automated checks passed     |
+|    10 | Hardening              | completed   | All automated checks passed     |
+|    11 | Deployment             | in_progress | Provider completion required    |
+|    12 | Launch                 | pending     | Requires explicit authorization |
 
 ## Phase 1 scope
 
@@ -86,8 +86,10 @@ Completed on 27 July 2026:
 
 ## Open items
 
-- Git was installed and a local repository was initialized on branch `main`. No remote
-  or author identity was configured, and no commit was created.
+- Git is configured on `main` with the existing GitHub remote
+  `MiguePenaloza/korean_shopping`. The remote currently contains the completed
+  Phase 10 commit; the product-detail maintenance and Phase 11 preparation remain
+  uncommitted until the release candidate passes its gate.
 - Seed product photography remains placeholder artwork; newly created products can
   use up to three real photographs.
 - Physical-phone, keyboard-only, and screen-reader checks remain listed in
@@ -492,7 +494,141 @@ Completed on 28 July 2026:
 - The local database was reset after smoke tests and Supabase was stopped with
   clean seed data preserved.
 
+## Post-Phase 10 maintenance
+
+Completed on 28 July 2026 without starting Phase 11:
+
+- Restored anonymous and signed-in access to the safe availability helper used by
+  the public product-detail projection.
+- Kept exact total, confirmed, reserved, and remaining inventory private.
+- Made the complete catalogue card a single accessible link to the detailed product
+  view; the existing image gallery, description, price state, quantity selector, and
+  add-to-cart action remain on the destination.
+- Added a browser-SDK regression that reads the exact detail and image projections
+  used by `/producto?id=...`.
+- Clarified that no administrator email is hard-coded and documented the trusted
+  first-administrator bootstrap and verification procedure.
+
+Validation completed on 28 July 2026:
+
+- `npm run format:check`: passed with exit code 0.
+- `npm run lint -- --max-warnings=0`: passed with exit code 0.
+- `npm run typecheck`: passed with exit code 0.
+- `npm run test`: 9 frontend test files and 25 tests passed.
+- `npm run db:check`: 11 migrations, 14 RLS tables, 32 secure functions, and
+  11 pgTAP suites passed structural validation.
+- `supabase db reset --local`: all 11 migrations and the seed applied cleanly.
+- `supabase test db`: 11 files and 210 assertions passed.
+- `supabase db lint --local --schema public --level warning --fail-on warning`: no
+  schema warnings or errors found.
+- `npm run smoke:catalogue`: safe categories, catalogue, product detail, image
+  projection, filtering, page cap, inventory privacy, and raw-table denial passed.
+- `npm run build`: 25 static pages generated across 24 application routes.
+- `npm run quality:static`: 25 exported pages, 24 unique route titles, AA static
+  checks, security headers, and the JavaScript budget passed.
+- `npm run smoke:static`: 18 representative URLs, including product detail, returned
+  HTTP 200 and the temporary server closed itself.
+
+Manual in-app click validation remains for Phase 12 because no controllable browser
+surface was available in this maintenance run. The local data path and exported
+route were both validated independently.
+
+## Phase 11 scope
+
+Authorized and started on 29 July 2026:
+
+- Added Turnstile tokens to email/password sign-in, registration, and password
+  recovery so production Supabase CAPTCHA can be enabled without breaking Auth.
+- Retained the explicit local-only CAPTCHA bypass and required a real site key for
+  production forms.
+- Added a production environment gate that requires HTTPS Supabase/site URLs, a
+  publishable key, a Turnstile site key, and rejects secret-like public variable
+  names.
+- Added `build:production` and pinned Node.js 24 for the Cloudflare build.
+- Moved the four required catalogue categories into an environment-independent
+  migration; simulated products and rates remain development-only seed data.
+- Documented account ownership, secrets handling, provider configuration, deployment
+  order, rollback, and the separate Phase 12 rehearsal.
+
+Local preparation validation completed on 29 July 2026:
+
+- `npm run format:check`: passed with exit code 0.
+- `npm run lint -- --max-warnings=0`: passed with exit code 0.
+- `npm run typecheck`: passed with exit code 0.
+- `npm run test`: 10 frontend test files and 28 tests passed.
+- `npm run db:check`: 12 migrations, 14 RLS tables, 32 secure functions, and
+  11 pgTAP suites passed structural validation.
+- `supabase db reset --local`: applied all 12 migrations and the seed, but the CLI
+  wrapper did not exit after the container restart and was stopped by the command
+  timeout. No reset process remained afterward.
+- `supabase migration list --local`: all 12 local and database migration versions
+  matched after the reset timeout.
+- `supabase test db`: 11 files and 210 assertions passed.
+- `supabase db lint --local --schema public --level warning --fail-on warning`: no
+  schema warnings or errors found.
+- `npm run build:production`: the production environment gate and 25-page static
+  export passed using non-secret validation-only public values.
+- `npm run quality:static`: accessibility, metadata, security headers, and the
+  300 KiB gzip budget passed; the maximum was 259,974 bytes.
+- `npm run smoke:static`: all 18 representative production-export routes returned
+  HTTP 200 and the temporary server closed itself.
+- `npm audit --omit=dev`: zero known production dependency vulnerabilities.
+
+Production progress completed on 30 July 2026:
+
+- Linked the CLI to the healthy `Belle Perle Production` project in São Paulo and
+  applied 13 reviewed migrations without development seed data.
+- Confirmed that all 13 local and remote migration versions match, all 14 public
+  tables have RLS enabled, `product-images` is public, `payment-evidence` is
+  private, and the minute-level expiration Cron job is active.
+- Added a production security-advisor migration that changed the three narrow
+  public projections to invoker-security views backed by bounded functions and
+  removed broad listing from the public image bucket.
+- Re-ran 11 local pgTAP files with 214 successful assertions. Hosted pgTAP was not
+  run because the production project intentionally does not install the development
+  `pgtap` extension; remote migration, query, lint, and advisor checks were used
+  instead.
+- `supabase db lint --linked --level warning`: no schema errors.
+- `supabase db advisors --linked --type security --level warn --fail-on error`: no
+  remaining error-level findings. The warning-level security-definer RPC findings
+  are intentional entry points with fixed empty search paths and caller/role checks.
+- Created the Cloudflare Pages project `belle-perle-korean-shopping` with `main` as
+  its production branch. Its permanent free URL is
+  `https://belle-perle-korean-shopping.pages.dev`.
+- Created a managed Turnstile widget restricted to the production hostname and
+  passed its secret directly to Supabase without committing or exposing it.
+- Configured Supabase Auth with the exact production site/callback URL, anonymous
+  checkout, Turnstile, email confirmation, eight-digit OTPs, and TOTP MFA support.
+- Rebuilt the exact production export with the real public Supabase, site, and
+  Turnstile values: 25 static pages, 18 route smoke checks, static accessibility and
+  security checks, and the 300 KiB gzip JavaScript budget passed.
+- Re-ran formatting, ESLint, strict TypeScript, 28 frontend tests, structural
+  database validation, and `npm audit --omit=dev`; all passed and the audit found
+  zero production vulnerabilities.
+
+External or user-owned work still required:
+
+- Disable the hosted project's legacy `anon`/`service_role` API keys and migrate,
+  rotate, then revoke the legacy JWT signing secret. This became mandatory when the
+  Supabase CLI unexpectedly printed the legacy elevated key while listing public
+  deployment configuration. The application uses only the modern publishable key.
+- Commit and push the exact validated release, deploy `out/`, and verify the live
+  response headers and provider flows.
+- Create the Google OAuth client and enter its client ID/secret directly in
+  Supabase.
+- Create the free Brevo account, verify `micky.ale7@gmail.com` as the pilot sender,
+  and enter the SMTP credential directly in Supabase. Brevo may replace the visible
+  Gmail sender with a compliant Brevo address because no owned sending domain
+  exists; an owned domain remains the recommended future deliverability upgrade.
+- Register and confirm `micky.ale7@gmail.com`, promote it through
+  `promote_admin_by_email`, and verify administrator access.
+- Enter the reviewed initial production exchange rate while ordering remains
+  closed.
+
+Phase 11 remains `in_progress`; production deployment and provider validation must
+not be claimed until these gates succeed.
+
 ## Next phase
 
-Phase 11 — Deployment. It requires explicit user authorization and must not begin
-automatically.
+Phase 12 — Launch. It requires Phase 11 completion and separate explicit
+authorization.

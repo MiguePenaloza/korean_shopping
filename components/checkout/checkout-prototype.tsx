@@ -12,6 +12,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { ensureGuestSession } from "@/lib/auth/guest-session";
+import { getCaptchaConfiguration } from "@/lib/auth/captcha";
 import { getCustomerAuthMessage } from "@/lib/auth/messages";
 import { isValidFullName, normalizeBolivianPhoneInput } from "@/lib/auth/validation";
 import {
@@ -48,8 +49,10 @@ export function CheckoutPrototype() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const submitting = useRef(false);
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
-  const localCaptchaBypass = process.env.NODE_ENV !== "production" && !siteKey;
+  const { siteKey, localBypass: localCaptchaBypass } = getCaptchaConfiguration(
+    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+    process.env.NODE_ENV,
+  );
   const needsAnonymousSession = !user;
 
   const handleCaptchaToken = useCallback((token: string) => {

@@ -1,6 +1,6 @@
 begin;
 
-select plan(15);
+select plan(16);
 
 select has_view(
   'public',
@@ -35,6 +35,16 @@ select is(
   ),
   true,
   'anonymous visitors can execute safe catalogue search'
+);
+
+select is(
+  has_function_privilege(
+    'anon',
+    'public.product_public_state(uuid)',
+    'EXECUTE'
+  ),
+  true,
+  'anonymous visitors can resolve the safe state used by product detail'
 );
 
 select hasnt_column(

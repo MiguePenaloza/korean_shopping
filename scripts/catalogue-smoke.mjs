@@ -47,6 +47,30 @@ assert(
   "Catalogue leaked exact inventory.",
 );
 
+const productId = catalogue[0]?.id;
+assert(productId, "The catalogue did not return a product for detail validation.");
+
+const { data: productDetail, error: productDetailError } = await supabase
+  .from("public_catalogue")
+  .select(
+    "id, code, name, brand, description, variant, category_name, price_bob, price_expires_at, availability, thumbnail_path, thumbnail_alt",
+  )
+  .eq("id", productId)
+  .maybeSingle();
+assert(!productDetailError, "Public product detail could not be read.");
+assert(productDetail?.id === productId, "Public product detail returned the wrong item.");
+assert(
+  !("total_stock" in productDetail) && !("confirmed_stock" in productDetail),
+  "Product detail leaked exact inventory.",
+);
+
+const { error: productImagesError } = await supabase
+  .from("public_product_images")
+  .select("storage_path, thumbnail_storage_path, alt_text, sort_order")
+  .eq("product_id", productId)
+  .order("sort_order");
+assert(!productImagesError, "Public product images could not be read.");
+
 const { data: searchResult, error: searchError } = await supabase.rpc(
   "search_public_catalogue",
   {
@@ -72,6 +96,7 @@ assert(invalidPageSizeError, "Page size above 20 was unexpectedly allowed.");
 
 console.log("PASS safe categories are publicly readable");
 console.log("PASS catalogue returns public products without exact inventory");
+console.log("PASS product detail and image gallery are publicly readable");
 console.log("PASS brand and category filtering works");
 console.log("PASS raw products remain inaccessible");
 console.log("PASS catalogue page size is capped at 20");

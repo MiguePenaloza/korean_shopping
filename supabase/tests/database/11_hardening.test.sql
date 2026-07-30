@@ -1,6 +1,6 @@
 begin;
 
-select plan(13);
+select plan(17);
 
 select is(
   has_function_privilege('anon', 'public.is_admin()', 'EXECUTE'),
@@ -47,6 +47,41 @@ select ok(
       and policyname = 'payment_evidence_admin_insert'
   ),
   'evidence uploads are restricted to generated order paths'
+);
+select ok(
+  (
+    select reloptions @> array['security_invoker=true']
+    from pg_class
+    where oid = 'public.public_catalogue'::regclass
+  ),
+  'the public catalogue view uses invoker security'
+);
+select ok(
+  (
+    select reloptions @> array['security_invoker=true']
+    from pg_class
+    where oid = 'public.public_categories'::regclass
+  ),
+  'the public categories view uses invoker security'
+);
+select ok(
+  (
+    select reloptions @> array['security_invoker=true']
+    from pg_class
+    where oid = 'public.public_product_images'::regclass
+  ),
+  'the public product image view uses invoker security'
+);
+select is(
+  (
+    select count(*)::integer
+    from pg_policies
+    where schemaname = 'storage'
+      and tablename = 'objects'
+      and policyname = 'product_images_public_read'
+  ),
+  0,
+  'the public product bucket does not expose object listing'
 );
 select is(
   has_table_privilege('authenticated', 'public.payment_evidence', 'INSERT'),

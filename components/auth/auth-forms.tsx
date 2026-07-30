@@ -1,12 +1,14 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useCallback, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
+import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { Alert } from "@/components/ui/alert";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { getCaptchaConfiguration } from "@/lib/auth/captcha";
 import { getCustomerAuthMessage } from "@/lib/auth/messages";
 import {
   getSafeNextPath,
@@ -29,6 +31,57 @@ async function clearAnonymousSession() {
   }
 }
 
+function useAuthCaptcha() {
+  const [token, setToken] = useState("");
+  const [renderKey, setRenderKey] = useState(0);
+  const configuration = getCaptchaConfiguration(
+    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+    process.env.NODE_ENV,
+  );
+  const handleToken = useCallback((value: string) => {
+    setToken(value);
+  }, []);
+  const reset = useCallback(() => {
+    setToken("");
+    setRenderKey((current) => current + 1);
+  }, []);
+
+  return {
+    ...configuration,
+    token,
+    renderKey,
+    ready: configuration.localBypass || Boolean(token),
+    handleToken,
+    reset,
+  };
+}
+
+function AuthCaptchaField({ captcha }: { captcha: ReturnType<typeof useAuthCaptcha> }) {
+  if (captcha.providerConfigured) {
+    return (
+      <TurnstileWidget
+        key={captcha.renderKey}
+        siteKey={captcha.siteKey}
+        onToken={captcha.handleToken}
+      />
+    );
+  }
+
+  if (captcha.localBypass) {
+    return (
+      <p className="text-sm text-muted">
+        Verificación omitida solamente en el entorno local.
+      </p>
+    );
+  }
+
+  return (
+    <Alert title="Verificación de seguridad no disponible">
+      Inténtalo nuevamente más tarde.
+    </Alert>
+  );
+}
+
 function ConfigurationAlert() {
   return (
     <Alert title="Configuración local pendiente">
@@ -44,6 +97,7 @@ export function LoginForm() {
   const { configured } = useAuth();
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const captcha = useAuthCaptcha();
   const nextPath = getSafeNextPath(searchParams.get("next"));
 
   async function loginWithGoogle() {
@@ -73,6 +127,10 @@ export function LoginForm() {
     event.preventDefault();
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
+    if (!captcha.ready) {
+      setMessage("Completa la verificación de seguridad antes de ingresar.");
+      return;
+    }
 
     const form = new FormData(event.currentTarget);
     setBusy(true);
@@ -83,6 +141,7 @@ export function LoginForm() {
       const { error } = await supabase.auth.signInWithPassword({
         email: String(form.get("email") ?? "").trim(),
         password: String(form.get("password") ?? ""),
+        options: { captchaToken: captcha.token || undefined },
       });
       if (error) throw error;
       router.replace(nextPath);
@@ -90,6 +149,7 @@ export function LoginForm() {
       setMessage(getCustomerAuthMessage(error, "login"));
     } finally {
       setBusy(false);
+      captcha.reset();
     }
   }
 
@@ -130,8 +190,13 @@ export function LoginForm() {
             autoComplete="current-password"
             required
           />
+          <AuthCaptchaField captcha={captcha} />
         </div>
-        <Button className="mt-5 w-full" type="submit" disabled={!configured || busy}>
+        <Button
+          className="mt-5 w-full"
+          type="submit"
+          disabled={!configured || busy || !captcha.ready}
+        >
           {busy ? "Ingresando…" : "Ingresar"}
         </Button>
       </form>
@@ -154,6 +219,7 @@ export function RegisterForm() {
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
   const [busy, setBusy] = useState(false);
+  const captcha = useAuthCaptcha();
 
   async function register(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -165,6 +231,10 @@ export function RegisterForm() {
     const phone = normalizeBolivianPhoneInput(String(form.get("phone") ?? ""));
     const password = String(form.get("password") ?? "");
 
+    if (!captcha.ready) {
+      setMessage("Completa la verificación de seguridad antes de crear la cuenta.");
+      return;
+    }
     if (!isValidFullName(fullName)) {
       setMessage("Escribe un nombre de 2 a 120 caracteres.");
       return;
@@ -192,6 +262,7 @@ export function RegisterForm() {
         options: {
           emailRedirectTo: redirectTo.toString(),
           data: { full_name: fullName, phone },
+          captchaToken: captcha.token || undefined,
         },
       });
       if (error) throw error;
@@ -205,6 +276,7 @@ export function RegisterForm() {
       setMessage(getCustomerAuthMessage(error, "signup"));
     } finally {
       setBusy(false);
+      captcha.reset();
     }
   }
 
@@ -251,7 +323,8 @@ export function RegisterForm() {
           minLength={8}
           required
         />
-        <Button type="submit" disabled={!configured || busy}>
+        <AuthCaptchaField captcha={captcha} />
+        <Button type="submit" disabled={!configured || busy || !captcha.ready}>
           {busy ? "Creando cuenta…" : "Crear cuenta"}
         </Button>
       </form>
@@ -264,11 +337,16 @@ export function RecoveryForm() {
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const captcha = useAuthCaptcha();
 
   async function recover(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
+    if (!captcha.ready) {
+      setMessage("Completa la verificación de seguridad antes de continuar.");
+      return;
+    }
 
     const form = new FormData(event.currentTarget);
     const redirectTo = new URL("/auth/callback", window.location.origin);
@@ -278,7 +356,10 @@ export function RecoveryForm() {
 
     const { error } = await supabase.auth.resetPasswordForEmail(
       String(form.get("email") ?? "").trim(),
-      { redirectTo: redirectTo.toString() },
+      {
+        redirectTo: redirectTo.toString(),
+        captchaToken: captcha.token || undefined,
+      },
     );
 
     if (error) {
@@ -287,6 +368,7 @@ export function RecoveryForm() {
       setSent(true);
     }
     setBusy(false);
+    captcha.reset();
   }
 
   if (sent) {
@@ -314,7 +396,8 @@ export function RecoveryForm() {
           autoComplete="email"
           required
         />
-        <Button type="submit" disabled={!configured || busy}>
+        <AuthCaptchaField captcha={captcha} />
+        <Button type="submit" disabled={!configured || busy || !captcha.ready}>
           {busy ? "Enviando…" : "Enviar enlace"}
         </Button>
       </form>

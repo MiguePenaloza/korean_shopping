@@ -5,10 +5,9 @@ durante un viaje de compras a Corea.
 
 ## Estado
 
-La Fase 10 completa el hardening local: concurrencia real sobre la última unidad,
-validación reforzada de comprobantes, encabezados de seguridad, accesibilidad
-automatizada, presupuesto de JavaScript y dependencias de producción sin
-vulnerabilidades conocidas por `npm audit`.
+La Fase 11 está autorizada y en preparación. La base local ya incluye el hardening,
+la protección Turnstile de los flujos de Auth y las comprobaciones de configuración
+de producción. La publicación espera las cuentas de producción de la propietaria.
 
 Consulta [docs/implementation-status.md](docs/implementation-status.md) para conocer
 el avance y la siguiente fase autorizable.
@@ -63,6 +62,8 @@ npm run test:watch
 npm run format
 npm run format:check
 npm run build
+npm run build:production
+npm run check:production-env
 npm run smoke:static
 npm run quality:static
 npm run smoke:auth
@@ -113,13 +114,16 @@ representados por una migración.
 
 ## Despliegue
 
-La preparación y publicación en Cloudflare Pages corresponde a la Fase 11. La
-configuración prevista usa:
+La Fase 11 usa Cloudflare Pages con:
 
 ```text
-Build command: npm run build
+Build command: npm run build:production
 Output directory: out
 ```
+
+El procedimiento completo para Supabase, Cloudflare, Turnstile, Google OAuth, SMTP,
+administrador y la posterior Fase 12 está en
+[`docs/phase-11-12-runbook.md`](docs/phase-11-12-runbook.md).
 
 ## Cierre de la campaña
 

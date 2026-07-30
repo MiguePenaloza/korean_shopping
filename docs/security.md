@@ -71,7 +71,9 @@ Public catalogue search runs through `search_public_catalogue`. It caps each pag
 at 20, validates input lengths, and returns only the reviewed public projection.
 Exact total, confirmed, reserved, and remaining inventory quantities never cross
 the public boundary. Availability is derived from database time, price versions,
-confirmed stock, and unexpired reservations.
+confirmed stock, and unexpired reservations. The public detail projection may
+execute only `product_public_state`; this helper returns the same reviewed state
+label and never returns a quantity.
 
 Permanent profile updates use `upsert_own_profile`, which derives the user ID from
 the JWT, rejects anonymous identities, normalizes the phone in PostgreSQL, and never

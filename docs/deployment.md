@@ -1,15 +1,20 @@
 # Deployment
 
+The complete provider-by-provider procedure and the separate launch rehearsal are
+maintained in [the Phase 11 and 12 runbook](phase-11-12-runbook.md).
+
 ## Target
 
-Cloudflare Pages will host the static `out/` directory. Deployment work belongs to
-Phase 11; current phases only verify local source artifacts.
+Cloudflare Pages hosts the static `out/` directory at
+`https://belle-perle-korean-shopping.pages.dev`. The Pages project and production
+Supabase project exist, but the first deployment remains gated by legacy-key
+revocation and the remaining provider checks in the runbook.
 
 ## Planned build settings
 
 ```text
 Framework: Next.js static export
-Build command: npm run build
+Build command: npm run build:production
 Output directory: out
 Production branch: main
 ```
@@ -28,6 +33,11 @@ Cloudflare response headers and add any production custom Supabase domain to
 - SMTP provider connected to Supabase Auth.
 - GitHub repository.
 
+The GitHub remote exists at `MiguePenaloza/korean_shopping`. The Supabase CLI is
+linked to project `byxwkwzvtxogjljrmwvd`, and Wrangler is authorized to the
+business owner's Cloudflare account. Provider credentials remain outside the
+repository.
+
 ## Environment handling
 
 Public configuration is copied from `.env.example` into the local and hosted
@@ -44,22 +54,42 @@ Local development:
    checkout labels this local-only bypass.
 4. Open local Mailpit to inspect email confirmation and recovery messages.
 
-Production setup remains part of Phase 11:
+Production status in Phase 11:
 
-- Add the deployed site and `/auth/callback` to Supabase redirect URLs.
+- The production site and exact `/auth/callback` are configured in Supabase.
+- Turnstile is restricted to the production hostname and enabled in Supabase Auth.
 - Configure Google OAuth in Google and Supabase; keep the client secret in Supabase.
 - Configure a production SMTP provider in Supabase Auth.
-- Configure Turnstile in Supabase Auth and expose only its site key to Next.js.
 - Keep email enumeration protection and sensible Auth rate limits enabled.
 
-After the administrator creates and confirms a permanent account, a trusted database
-operator can bootstrap it from the Supabase SQL editor:
+There is no hard-coded administrator email. An administrator is a confirmed,
+non-anonymous Supabase Auth account whose matching `public.profiles.role` is
+`admin`.
+
+To create the first administrator:
+
+1. Create a normal account from `/registro` using email/password or Google.
+2. Confirm the email address and sign in at least once so the permanent profile
+   exists.
+3. Open the trusted Supabase SQL editor for the same environment and run:
 
 ```sql
 select public.promote_admin_by_email(
-  'administrator@example.com',
+  'micky.ale7@gmail.com',
   'Initial production administrator'
 );
+```
+
+4. Sign out and back in, or reload the session. The `Administrar` navigation entry
+   and access to `/admin` confirm that the role was loaded.
+
+The role can be verified without exposing private Auth data:
+
+```sql
+select auth_user.email, profile.role
+from auth.users as auth_user
+join public.profiles as profile on profile.id = auth_user.id
+where lower(auth_user.email) = lower('micky.ale7@gmail.com');
 ```
 
 Never call this procedure from browser code and never place a service-role key in
